@@ -3,3 +3,6 @@ description: Systems Engineer | Networking | Security | PreSales | Cloud | Devop
 show_downloads: false
 google_analytics: false
 theme: jekyll-theme-hacker
+timezone: America/New_York
+future: true
+author: Aravind

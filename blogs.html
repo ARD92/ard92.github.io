@@ -1,0 +1,19 @@
+---
+layout: default
+title: What did i learn over the years ? 
+author: Aravind
+---
+<html>
+<head>
+<ul>
+  {% for blogs in site.posts %}
+    <li>
+      <a href="{{ blogs.url }}">
+        {{ blogs.title }}
+      </a>
+      <time datetime="{{ blogs.date | date: "%Y-%m-%d" }}">{{ blogs.date | date_to_long_string }}</time>
+    </li>
+  {% endfor %}
+</ul>
+</head>
+</html>
