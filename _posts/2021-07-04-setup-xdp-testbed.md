@@ -174,7 +174,75 @@ tmpfs           2.0G     0  2.0G   0% /sys/fs/cgroup
 tmpfs           394M     0  394M   0% /run/user/0
 /dev/vda2        96G   61M   91G   1% /root/vda2
 ```
+## resize root partition instead 
+```
+root@xdp:~# fdisk /dev/sda
 
+Welcome to fdisk (util-linux 2.34).
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+
+Command (m for help): d     <<<<<<<< delete partition 1 i.e. /dev/sda1
+Partition number (1,14,15, default 15): 1
+
+Partition 1 has been deleted.
+
+Command (m for help): p
+Disk /dev/sda: 102.2 GiB, 109735575552 bytes, 214327296 sectors
+Disk model: QEMU HARDDISK
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: gpt
+Disk identifier: D2A0C4E2-A5C8-4762-9CC0-47B0A4F00CA4
+
+Device     Start    End Sectors  Size Type
+/dev/sda14  2048  10239    8192    4M BIOS boot
+/dev/sda15 10240 227327  217088  106M EFI System
+
+Command (m for help): n   <<<<<< create new partition with number 1. i.e./dev/sda1
+Partition number (1-13,16-128, default 1): 1
+First sector (34-214327262, default 227328):
+Last sector, +/-sectors or +/-size{K,M,G,T,P} (227328-214327262, default 214327262):
+
+Created a new partition 1 of type 'Linux filesystem' and of size 102.1 GiB.
+Partition #1 contains a ext4 signature.
+
+Do you want to remove the signature? [Y]es/[N]o: y
+
+The signature will be removed by a write command.
+
+Command (m for help): w <<<<<<< save
+The partition table has been altered.
+Syncing disks.
+```
+
+resize the partition
+
+```
+root@xdp:~# resize2fs /dev/sda1
+resize2fs 1.45.5 (07-Jan-2020)
+Filesystem at /dev/sda1 is mounted on /; on-line resizing required
+old_desc_blocks = 1, new_desc_blocks = 13
+The filesystem on /dev/sda1 is now 26762491 (4k) blocks long.
+```
+
+validate the size
+```
+root@xdp:~# df -h
+Filesystem      Size  Used Avail Use% Mounted on
+udev            2.0G     0  2.0G   0% /dev
+tmpfs           394M  968K  393M   1% /run
+/dev/sda1        99G  1.5G   98G   2% /
+tmpfs           2.0G     0  2.0G   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+tmpfs           2.0G     0  2.0G   0% /sys/fs/cgroup
+/dev/loop1       56M   56M     0 100% /snap/core18/2066
+/dev/loop0       68M   68M     0 100% /snap/lxd/20326
+/dev/loop2       33M   33M     0 100% /snap/snapd/12159
+/dev/sda15      105M  7.9M   97M   8% /boot/efi
+tmpfs           394M     0  394M   0% /run/user/0
+```
 ## Install necessary packages
 ```
 sudo apt-get update
