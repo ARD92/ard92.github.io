@@ -233,6 +233,7 @@ Run the below commands on all primary and worker nodes
 This process takes about 30 mins 
 
 ```
+./run -c config-dir conf
 ./run -c config-dir deploy
 ```
 
