@@ -1,5 +1,10 @@
-# Proxy HTTP and HTTPS Connections 
+---
+layout: post
+title: Proxy apt connections from ubuntu server/vm  to your macbook 
+tags: linux
+---
 
+# Proxy HTTP and HTTPS Connections 
 sometimes you may want to proxy connections from your ubuntu server to another machine. lets say you want to proxy connections from a device (a server in your lab) to your laptop so that apt-packages can resolve. one can do that by installing squidman on MAC to run it as a proxy server. follow the below steps to try it out! 
 
 ##  Proxy the connections from ubuntu server on VPN 
