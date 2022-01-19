@@ -1,7 +1,7 @@
 ---
 layout: post
 title: vlan id and native vlan ids
-tags: Junos switching
+tags: junos switching
 ---
 # Topology considered
 

@@ -2,6 +2,7 @@
 layout: post
 title: Programming IP table rules using cRPD
 author: Aravind
+tags: junos crpd
 ---
 Sometimes you may need a feature which is not natively available in junos. Given the timeline how to solve such problems ? Juniper has a great framework withing mgd which supports creating custom yang models and tie an action script underneath to bring in new RPC calls and configuration hierarchy. cRPD having the ability to run on linux provides some nice capability to manage the underlying linux apps to be controlled using Junos interface and expose the same over netconf. By doing so, we could use any controller(ODL for example) to make rpc calls to cRPD which under the hood would take the necessary actions as defined in the action script and the config script configures as per the yang model. Given this capability, we can try to program Iptables using cRPD using yang and action script as an example and use this a stop gap until the fetaure is available natively.  
 
