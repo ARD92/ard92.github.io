@@ -6,11 +6,17 @@ author: Aravind
 <html>
 <head>
 <ul>
-  {% for tag in site.tags %}
-    <li>
-	    {{ tag[1].size | plus:1000 }}${{ tag[0] }}${{ tag[1].size}}
-    </li>
-  {% endfor %}
+	{% capture temtags %}
+		{% for tag in site.tags %}
+			{{ tag[1].size | plus:1000 }}#{{ tag[0] }}#{{ tag[1].size }}
+		{% endfor %}
+	{% endcapture %}
+	{% assign sortedtemptags = temptags | split:' '| sort | reverse %}
+	{% for temptag in sortedtemptags %}
+  		{% assign tagitems = temptag | split: '#' %}
+  		{% capture tagname %}{{ tagitems[1] }}{% endcapture %}
+  			<a href="/tag/{{ tagname }}"><code class="highligher-rouge"><nobr>{{ tagname }}</nobr></code></a>
+	{% endfor %}
 </ul>
 </head>
 </html>
