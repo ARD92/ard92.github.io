@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Daemonize python apps in cRPD
-tags: Junos, Linux
+tags: junos linux crpd
 ---
 
 # Daemonize python apps 

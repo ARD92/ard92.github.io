@@ -2,6 +2,7 @@
 layout: post
 title: Netconf calls for Openroadm devices  
 author: Aravind
+tags: juniper junos
 ---
 
 Junipers ACX6160-T is a pure L1 transponder supporting multi 100G connections over CFP2DCO and QSFP28s. The configuration follows openroadm model and the expectation is the openroadm controller would be programming the transponder over Netconf 

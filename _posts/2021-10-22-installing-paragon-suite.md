@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Installing Paragon Automation Suite 
-tags: Juniper
+tags: juniper telemetry
 ---
 # Installing Paragon Automation Suite 
 Paragon automation suite is a Juniper product which mainly comprises of Paragon planner (previous known as northstar planner ), Paragon Pathfinder (Previously northstar), Paragon Insights (Previously known as healthbot). All of them can be accessed in a single UI and be used for various use cases from Telemetry to WAN controller to provsion your RSVP-TE or SRTE LSPs.

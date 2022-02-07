@@ -2,6 +2,7 @@
 layout: post
 title: JCNR on Azure Kubernetes Services
 author: Aravind
+tags: junos juniper crpd azure
 ---
 
 # Azure Kubernetes Services

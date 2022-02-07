@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Using Juniper Terraform Automation Framework (JTAF) to generate Junos terraform providers  
-tags: Junos
+tags: junos juniper
 ---
 
 # How to use JTAF  

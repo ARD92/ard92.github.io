@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Building Custom Telemetry Sensors in Junos
-tags: [Junos, Telemetry]
+tags: junos telemetry
 categories: Junos
 ---
 

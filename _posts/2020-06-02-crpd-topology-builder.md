@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Building Custom topologies using Junipers containerized routing stack 
-tags: cRPD
+tags: crpd juniper
 ---
 
 [Download cRPD topology builder from here](https://github.com/ARD92/crpd-topology-builder)

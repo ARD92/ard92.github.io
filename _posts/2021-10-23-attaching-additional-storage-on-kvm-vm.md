@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Adding additional storage to KVM VMs 
-tags: linux
+tags: linux kvm
 ---
 
 # Adding additional storage on KVM

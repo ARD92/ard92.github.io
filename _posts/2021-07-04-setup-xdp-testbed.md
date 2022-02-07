@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Setup testbed for testing XDP & ebpf 
-tags: Linux
+tags: linux
 ---
 
 ## Use the below shell script to spin up a VM on KVM as the test bed
