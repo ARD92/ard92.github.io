@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Flex filters 
+Author: Aravind
 tags: junos juniper mx
 ---
 
@@ -22,12 +23,12 @@ In order to process the packets we take the below stages
 
 policy maps are policies which we are used to stamp a value to the result of a filter before it is passed to the next stage. All the filters are then applied in a chain. In this case, 4 filters are created and then created as an input-chain-filter. What this means is `stage1` filter is first executed followed by `stage2` and so on. However the terms within `stage1` will stamp a value based on the policy map. This would be evaluated in the next stage accordingly and would be processed. If the tag(a dummy value 3/6 bit depending on dscp/exp bits used) isn't present those would not be processed. This will ensure all conditions are evaluated before a final decision is made to accept/reject the packet. 
 
-![packet_processing](../images/gtp_processing.png){:class="img-responsive"}
+![packet_processing](/images/gtp_processing.png){:class="img-responsive"}
 
 ### How flex filter offsets are determined
 In the below example, an IPv4 based GTP packet is considered with inner IP being IPv4 
 
-[v4inv4_gtp](../images/v4_in_v4_gtp.png){:class="img-responsive"}
+![v4inv4_gtp](/images/v4_in_v4_gtp.png){:class="img-responsive"}
 
 ### Configs using Next-term-approach
 In the below method, policy maps are not considered. Instead each term is evaluated. Another method is described below using policy maps which is more suitable and scalable when one runs into such use cases.
