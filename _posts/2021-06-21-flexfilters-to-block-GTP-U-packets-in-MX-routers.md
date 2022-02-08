@@ -1,3 +1,9 @@
+---
+layout: post
+title: Flex filters 
+tags: junos juniper mx
+---
+
 # Firewall filtering GTP-U traffic using Flex filters on Juniper MX routers
 
 As many may know, Juniper's flag ship router, the MX series is immensely flexible. While not only offering the flexibility , it offers great scalability as well. The scale number of firewall filters are great and in case you would want to use a ton of stateless firewalls the TRIO chipset offers the best scale in the market. Talk to your SE for the actual scale.
