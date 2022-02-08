@@ -64,11 +64,11 @@ kube-system   omsagent-pgzqk                        1/1     Running   0         
 kube-system   omsagent-rs-74dd9bfc7d-476cn          1/1     Running   0          3m4s
 kube-system   tunnelfront-b6d977874-lg7sd           1/1     Running   0          2m58s
 ```
-![networking](../images/jcnr_networking.png)
+![networking](/images/jcnr_networking.png)
 
 ## Setup Platter
 
-![topology](../images/jcnr_azure_topo.png)
+![topology](/images/jcnr_azure_topo.png)
 
 ### Install Multus
 
