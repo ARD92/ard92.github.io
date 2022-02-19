@@ -1,7 +1,7 @@
 ---
 layout: default
 ---
-# ** WHO AM I **
+# ** ABOUT ME **
 Systems engineer who is passionate and enthusiastic about technology and solution building in the networking space. Currently working at Juniper Networks as a pre sales SE solving problems pertaining to Service provider networks, virtualization and cloud. 
 * * *
 
