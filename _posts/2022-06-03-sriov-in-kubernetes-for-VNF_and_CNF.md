@@ -494,6 +494,8 @@ In this case considering vSRX to bootup using SRIOV DPDK interfaces.
 Notice the sriov_dpdk used in the annotations. without this, kubevirt will throw an error when spinning up the VM. 
 The error has been discussed in the earlier sections. 
 
+Ensure to add respective vlan tags to the VF.
+
 ```
 root@k8s-master:~/vsrx_sriov_fix# more sriov_nad_fxp.yml
 apiVersion: "k8s.cni.cncf.io/v1"
@@ -507,6 +509,7 @@ spec:
   "type": "sriov",
   "cniVersion": "0.3.1",
   "name": "sriovnet-fxp",
+  "vlan": 1000,
   "ipam": {
     "type": "host-local",
     "subnet": "1.10.1.0/24",
@@ -647,10 +650,13 @@ TXDs number alignment: 8
 ## Backup content
 
 ### Install accelerated bridge CNI
+```
 git clone https://github.com/k8snetworkplumbingwg/accelerated-bridge-cni.git
 kubectl apply -f images/k8s-v1.16/accelerated-bridge-cni-daemonset.yaml
+```
 
-
+### Validate
+```
 root@k8s-master:~/sriov_cni/accelerated-bridge-cni# kubectl get pods -A | grep accelerated-bridge
 kube-system   kube-accelerated-bridge-cni-ds-amd64-q9grf   1/1     Running   0             35s
 kube-system   kube-accelerated-bridge-cni-ds-amd64-tzmq2   1/1     Running   0             35s
@@ -659,10 +665,11 @@ root@k8s-master:~/sriov_cni/accelerated-bridge-cni# kubectl get pods -A | grep s
 kube-system   kube-sriov-cni-ds-amd64-gsjdq                1/1     Running   0             45m
 kube-system   kube-sriov-cni-ds-amd64-hsw74                1/1     Running   0             45m
 kube-system   kube-sriov-cni-ds-amd64-qzl99                1/1     Running   0             45m
-
+```
 
 configs for accelerated bridge. This needed for creating the Network attachment definitions etc. The SRIOV device plugin for discovery and report of VFs allocatable and accelerated bridge for VM NAD attachment. 
  
+```
 https://github.com/k8snetworkplumbingwg/accelerated-bridge-cni/blob/master/docs/configuration-reference.md
-
+```
 
