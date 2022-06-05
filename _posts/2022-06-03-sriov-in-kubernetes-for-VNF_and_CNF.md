@@ -488,8 +488,41 @@ Then ping the gateway
 
 ## Create a VM using Kubevirt
 In this case considering vSRX to bootup using SRIOV DPDK interfaces. 
-The same NAD as above has been utilized. Additionally left and right interfaces have been created. 
 
+### Create NAD
+
+Notice the sriov_dpdk used in the annotations. without this, kubevirt will throw an error when spinning up the VM. 
+The error has been discussed in the earlier sections. 
+
+```
+root@k8s-master:~/vsrx_sriov_fix# more sriov_nad_fxp.yml
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: sriovnet-fxp
+  annotations:
+    k8s.v1.cni.cncf.io/resourceName: intel.com/intel_sriov_dpdk
+spec:
+  config: '{
+  "type": "sriov",
+  "cniVersion": "0.3.1",
+  "name": "sriovnet-fxp",
+  "ipam": {
+    "type": "host-local",
+    "subnet": "1.10.1.0/24",
+    "routes": [{
+      "dst": "0.0.0.0/0"
+    }],
+    "gateway": "1.10.1.1"
+  }
+}'
+```
+similarly multiple NADs can be created.
+
+### Create VM manifest file
+ 
+In this case, using vSRX and attaching DPDK SRIOV interface.  
+ 
 ```
 root@k8s-master:~/vsrx_sriov_fix# more vsrx-kubevirt.yaml
 ---
