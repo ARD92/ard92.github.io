@@ -646,6 +646,9 @@ Max possible number of TXDs per queue: 4096
 Min possible number of TXDs per queue: 32
 TXDs number alignment: 8
 ```
+## Manifest files
+
+The complete manifest files can be found [here](https://github.com/ARD92/kubevirt-manifests)
 
 ## Backup content
 
