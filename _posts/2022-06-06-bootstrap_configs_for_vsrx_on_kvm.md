@@ -245,3 +245,76 @@ set system syslog file interactive-commands interactive-commands any
 set system syslog file messages any any
 set system syslog file messages authorization info
 ```
+
+## Unmount the config ISO image 
+Patch the manifest file to unmount the ISO image so next time it doesnt use it.
+
+```
+kubectl patch vm vsrx-sriov --type json -p='[{"op": "remove", "path":"/spec/template/spec/volumes/1"}, {"op": "remove", "path":"/spec/template/spec/domain/devices/disks/1"}]'
+
+virtualmachine.kubevirt.io/vsrx-sriov patched
+```
+
+### Validate
+
+Run the below to ensure the additional config disks are not present anymore. 
+
+```
+kubectl get vm vsrx-sriov -o=jsonpath="{.spec.template.spec.volumes}"
+kubectl get vm vsrx-sriov -o=jsonpath="{.spec.template.spec.domain.devices.disks}"
+```
+
+Verify the xml file to ensure disc is unmounted 
+
+#### Retrieve virt-launcher pod 
+
+Find the pod and enter the pod 
+```
+root@k8s-master:~/# kubectl get pods
+NAME                             READY   STATUS    RESTARTS   AGE
+virt-launcher-vsrx-sriov-qrfxm   2/2     Running   0          22m
+
+root@k8s-master:~/# kubectl exec -it virt-launcher-vsrx-sriov-qrfxm sh
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+Defaulted container "compute" out of: compute, volumeconfig, container-disk-binary (init), volumeconfig-init (init)
+sh-4.4#
+```
+
+#### Check the XML created by kubevirt
+
+Check if the config disc has been unmounted. 
+
+```
+sh-4.4# virsh list
+ Id   Name                 State
+------------------------------------
+ 1    default_vsrx-sriov   running
+
+sh-4.4# virsh dumpxml default_vsrx-sriov
+
+< ----------- Snipped ------------ >
+
+<devices>
+    <emulator>/usr/libexec/qemu-kvm</emulator>
+    <disk type='file' device='disk' model='virtio-transitional'>
+      <driver name='qemu' type='raw' cache='none' error_policy='stop' discard='unmap'/>
+      <source file='/var/run/kubevirt-private/vmi-disks/boot/disk.img' index='3'/>
+      <backingStore/>
+      <target dev='vda' bus='virtio'/>
+      <alias name='ua-boot'/>
+      <address type='pci' domain='0x0000' bus='0x02' slot='0x03' function='0x0'/>
+    </disk>
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='qcow2' cache='none' error_policy='stop' discard='unmap'/>
+      <source file='/var/run/kubevirt-ephemeral-disks/disk-data/config/disk.qcow2' index='1'/>
+      <backingStore type='file' index='2'>
+        <format type='raw'/>
+        <source file='/var/run/kubevirt/container-disks/disk_1.img'/>
+      </backingStore>
+      <target dev='sda' bus='sata'/>
+      <readonly/>
+      <alias name='ua-config'/>
+      <address type='drive' controller='0' bus='0' target='0' unit='0'/>
+    </disk>
+```
+
