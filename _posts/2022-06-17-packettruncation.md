@@ -159,3 +159,58 @@ tcpdump: verbose output suppressed, use -v[v]... for full protocol decode listen
 12:58:25.642835 02:aa:01:10:01:05 > c2:48:d9:26:14:29, e
 ```
 ![packettruncator](/images/packet_truncate_3.png)
+
+## Troubleshooting commands
+
+```
+root@vmx2# run show forwarding-options port-mirroring
+Instance Name: PM1
+  Instance Id: 2
+  Input parameters:
+    Rate                  : 1
+    Run-length            : 0
+    Maximum-packet-length : 65
+  Output parameters:
+    Family              State     Destination          Next-hop
+    inet                up        ge-0/0/5.10          199.1.1.2
+ 
+Instance Name: PM2
+  Instance Id: 3
+  Input parameters:
+    Rate                  : 1
+    Run-length            : 0
+    Maximum-packet-length : 0
+  Output parameters:
+    Family              State     Destination          Next-hop
+    inet                up        ge-0/0/5.20          199.2.1.2
+ 
+
+ 
+VMX-0(vmx2 vty)# show sample instance summary
+Inst  Rate length Next-hop Clip-size Max-pps Class Proto  Ref-Inst Name Ref-inst-name ref-count
+-----------------------------------------------------------------------------------------------
+   1     1      1      784         0   65535     5     0      0 &global_instance           0
+   1     1      1      785         0   65535     5     1      0 &global_instance           0
+   1     1      1      786         0   65535     5     5      0 &global_instance           0
+   1     1      1      787         0   65535     7     0      0 &global_instance           0
+   1     1      1      788         0   65535     7     1      0 &global_instance           0
+   1     1      1      789         0   65535     7     5      0 &global_instance           0
+   2     1      0      781        65       0     2     0      0 PM1           0
+   3     1      0      782         0       0     2     0      0 PM2           0
+   4     1      0        0         0    1000     1     0      0 SAMPLE-1           0
+ 
+ 
+
+VMX-0(vmx2 vty)# show filter nexthops
+                           Name Protocol         Type Option Refcount  NH ID
+------------------------------- -------- ------------ ------ --------  -----
+             nhg-gtp-notruncate     IPv4 nexthop-group   0x00        3 16777286
+                       nhg-rlt0     IPv4 nexthop-group   0x00        0    858
+
+
+
+VMX-0(vmx2 vty)# show nhdb id 858 statistics
+Nexthop Statistics:
+Interface      NH ID Next Hop Addr    Output Pkts Pkt Rate    Output Bytes  Byte Rate   Protocol
+------------ ------- --------------- ------------ -------- --------------- ---------- ---------- 
+```
