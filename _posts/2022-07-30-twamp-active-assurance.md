@@ -490,6 +490,26 @@ For this, we need to enable ALG for TWAMP in the firewall to ensure it copies th
 ### Configure ALG on vSRX
 ```
 set security alg twamp 
+
+Configure a custom application for TWAMP with destination port as 864(We can pick a different port as well)  and attach the twamp ALG.
+ 
+set applications application cust-twamp application-protocol twamp
+set applications application cust-twamp protocol tcp
+set applications application cust-twamp source-port 0-65535
+set applications application cust-twamp destination-port 864
+set applications application cust-twamp inactivity-timeout 1800
+ 
+Configure two separate security policies, one for TCP control port with the above custom application and another policy to allow UDP traffic.
+ 
+set security policies from-zone untrust to-zone trust policy default-permit match source-address any
+set security policies from-zone untrust to-zone trust policy default-permit match destination-address any
+set security policies from-zone untrust to-zone trust policy default-permit match application cust-twamp
+set security policies from-zone untrust to-zone trust policy default-permit then permit
+ 
+set security policies from-zone untrust to-zone trust policy allow-udp match source-address any
+set security policies from-zone untrust to-zone trust policy allow-udp match destination-address any
+set security policies from-zone untrust to-zone trust policy allow-udp match application any
+set security policies from-zone untrust to-zone trust policy allow-udp then permit
 ```
 
 Another alternative is to use twamp-lite. This will ensure there is no control connection at all and just send the UDP probes. This will also by pass the NAT issue and it would work.
