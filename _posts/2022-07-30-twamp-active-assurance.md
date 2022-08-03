@@ -437,6 +437,8 @@ ID       ID          address          port    address          port       state 
 
 ## Statistics and Debugging
 Since these are hostbased PFE /inline using LU the statistics need to be checked in PFE.
+
+### From PFE
 ```
 VMX-0(PE1 vty)# show jnh inline-twamp statistics
 
@@ -449,6 +451,11 @@ Num Data Packets Received by Lu  : 0
 Num Data Packets Sent by ukern   : 0
 Data Packets Tx bad len in ukern : 0
 Data Packets Tx error in ukern   : 0
+```
+### From RE
+```
+root@PE1> show services rpm twamp client probe-results control-connection < >
+root@PE1> show services rpm twamp client probe-results test-session < >
 ```
 
 You can also use firewall filters
