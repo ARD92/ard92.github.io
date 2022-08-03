@@ -255,3 +255,234 @@ Error statistics:
 ```
 
 ![results](/images/test_tcp.png){:class="img-responsive"}
+
+## Using multiple Si- interfaces each mapped to VRF
+
+```
++--------------------+                                +----------------------+
+|                    |                                |                      |
+|           +------+ |                                |  +-------+           |
+|           | paa-1+-+--------------------------------+--+paa-1  |           |
+|           +------+ |                                |  +-------+           |
+|                    |                                |                      |
+|           +------+ |                                |  +-------+           |
+|           |paa-2 +-+--------------------------------+--+paa-2  |           |
+|           +------+ |                                |  +-------+           |
+|                    |                                |                      |
+|           +------+ |                                |  +-------+           |
+|           |paa-3 +-+--------------------------------+--+paa-3  |           |
+|           +------+ |                                |  +-------+           |
+|                    |                                |                      |
+|           +-----+  |                                |  +--------+          |
+|           |paa-4+--+--------------------------------+--+paa-4   |          |
+|           |     |  |                                |  +--------+          |
+|           +-----+  |                                |                      |
+|                    |                                |                      |
+|                    |                                |                      |
++--------------------+                                +----------------------+
+```
+
+### TWAMP server Configs
+```
+set chassis fpc 4 pic 0 inline-services bandwidth 1g
+set chassis fpc 4 pic 1 inline-services bandwidth 1g
+set chassis fpc 4 pic 2 inline-services bandwidth 1g
+set chassis fpc 4 pic 3 inline-services bandwidth 1g
+=set interfaces si-4/0/0 unit 0 family inet
+set interfaces si-4/0/0 unit 10 rpm twamp-server
+set interfaces si-4/0/0 unit 10 family inet address 11.2.1.1/32
+set interfaces si-4/1/0 unit 0 family inet
+set interfaces si-4/1/0 unit 10 rpm twamp-server
+set interfaces si-4/1/0 unit 10 family inet address 11.1.1.1/32
+set interfaces si-4/2/0 unit 0 family inet
+set interfaces si-4/2/0 unit 10 rpm twamp-server
+set interfaces si-4/2/0 unit 10 family inet address 11.3.1.1/32
+set interfaces si-4/3/0 unit 0 family inet
+set interfaces si-4/3/0 unit 10 rpm twamp-server
+set interfaces si-4/3/0 unit 10 family inet address 11.4.1.1/32
+set routing-instances PAA-1 instance-type virtual-router
+set routing-instances PAA-1 interface si-4/0/0.10
+set routing-instances PAA-1 interface ae0.10
+set routing-instances PAA-2 instance-type virtual-router
+set routing-instances PAA-2 interface si-4/1/0.10
+set routing-instances PAA-2 interface ae0.20
+set routing-instances PAA-3 instance-type virtual-router
+set routing-instances PAA-3 interface si-4/2/0.10
+set routing-instances PAA-3 interface ae0.30
+set routing-instances PAA-4 instance-type virtual-router
+set routing-instances PAA-4 interface si-4/3/0.10
+set routing-instances PAA-4 interface ae0.40
+set services rpm twamp server routing-instance-list PAA-1 port 900
+set services rpm twamp server routing-instance-list PAA-2 port 901
+set services rpm twamp server routing-instance-list PAA-3 port 902
+set services rpm twamp server routing-instance-list PAA-4 port 903
+set services rpm twamp server authentication-mode none
+set services rpm twamp server port 862
+set services rpm twamp server client-list WIPM_SERVERS address 12.1.2.50/32
+set services rpm twamp server client-list WIPM_SERVERS address 12.2.2.50/32
+set services rpm twamp server client-list WIPM_SERVERS address 12.3.2.50/32
+set services rpm twamp server client-list WIPM_SERVERS address 12.4.2.50/32
+```
+
+### TWAMP Client Configs
+```
+set routing-instances PAA-1 routing-options static route 11.2.1.1/32 next-hop 12.1.2.49
+set routing-instances PAA-1 instance-type virtual-router
+set routing-instances PAA-1 interface ae10.10
+set routing-instances PAA-2 routing-options static route 11.1.1.1/32 next-hop 12.2.2.49
+set routing-instances PAA-2 instance-type virtual-router
+set routing-instances PAA-2 interface ae10.20
+set routing-instances PAA-3 routing-options static route 11.3.1.1/32 next-hop 12.3.2.49
+set routing-instances PAA-3 instance-type virtual-router
+set routing-instances PAA-3 interface ae10.30
+set routing-instances PAA-4 routing-options static route 11.4.1.1/32 next-hop 12.4.2.49
+set routing-instances PAA-4 instance-type virtual-router
+set routing-instances PAA-4 interface ae10.40
+
+set services rpm twamp client control-connection PAA-1 destination-port 900
+set services rpm twamp client control-connection PAA-1 routing-instance PAA-1
+set services rpm twamp client control-connection PAA-1 target-address 11.2.1.1
+set services rpm twamp client control-connection PAA-1 test-count 1
+set services rpm twamp client control-connection PAA-1 test-interval 2
+set services rpm twamp client control-connection PAA-1 test-session PAA-11 target-address 11.2.1.1
+set services rpm twamp client control-connection PAA-1 test-session PAA-11 probe-count 20
+set services rpm twamp client control-connection PAA-1 test-session PAA-11 probe-interval 2
+set services rpm twamp client control-connection PAA-2 destination-port 901
+set services rpm twamp client control-connection PAA-2 routing-instance PAA-2
+set services rpm twamp client control-connection PAA-2 target-address 11.1.1.1
+set services rpm twamp client control-connection PAA-2 test-count 1
+set services rpm twamp client control-connection PAA-2 test-interval 2
+set services rpm twamp client control-connection PAA-2 test-session PAA-22 target-address 11.1.1.1
+set services rpm twamp client control-connection PAA-2 test-session PAA-22 probe-count 20
+set services rpm twamp client control-connection PAA-2 test-session PAA-22 probe-interval 2
+set services rpm twamp client control-connection PAA-3 destination-port 902
+set services rpm twamp client control-connection PAA-3 routing-instance PAA-3
+set services rpm twamp client control-connection PAA-3 target-address 11.3.1.1
+set services rpm twamp client control-connection PAA-3 test-count 1
+set services rpm twamp client control-connection PAA-3 test-interval 2
+set services rpm twamp client control-connection PAA-3 test-session PAA-33 target-address 11.3.1.1
+set services rpm twamp client control-connection PAA-3 test-session PAA-33 probe-count 20
+set services rpm twamp client control-connection PAA-3 test-session PAA-33 probe-interval 2
+```
+
+### Results
+```
+root@clavicle> request services rpm twamp start client PAA-1
+root@clavicle> request services rpm twamp start client PAA-2
+root@clavicle> request services rpm twamp start client PAA-3
+
+root@D2IPE-II-RE0> show services rpm twamp server
+Connection  Client           Client  Server           Server   Session  Auth
+ID          address          port    address          port     count    mode
+         9  12.1.2.50         51214  11.2.1.1            900         1  Unauthenticated
+        10  12.2.2.50         54091  11.1.1.1            901         1  Unauthenticated
+        11  12.3.2.50         61419  11.3.1.1            902         1  Unauthenticated
+Session  Connection  Sender           Sender  Reflector        Reflector  Session    Auth
+ID       ID          address          port    address          port       state      mode
+      9           9  12.1.2.50         10008  11.2.1.1             10008  Active     Unauthenticated
+     10          10  12.2.2.50         10009  11.1.1.1             10009  Active     Unauthenticated
+     11          11  12.3.2.50         10010  11.3.1.1             10010  Active     Unauthenticated
+```
+
+## Using Host PFE based timestamping
+Using `si-*` interfaces, although provides the most accurate timestamping, there are limitations on the inline service interfaces. 
+Some of them are
+- only one TWAMP reflector/server per IFL 
+- you can enable more than one si- interface by using different PICs. Cards like MPC7E support upto 4 tunnel pics so 4 `si-*` interfaces can be used. 
+- flexible and scalable to multiple VRFs 
+- no need for si- interface allowing configs to be simple .
+- can you underlying interface of lo0.x interfaces
+
+### Configs server side 
+```
+root@PE1# show services
+rpm {
+    twamp {
+        server {
+            routing-instance-list {
+                VRF1 {
+                    port 900;
+                }
+                VRF2 {
+                    port 901;
+                }
+                VRF3 {
+                    port 902;
+                }
+            }
+
+
+set interfaces lo0 unit 100 family inet address 100.100.1.1/32
+set interfaces lo0 unit 200 family inet address 100.100.2.1/32
+set interfaces lo0 unit 300 family inet address 100.100.3.1/32
+set routing-instances VRF1 interface lo0.100
+set routing-instances VRF2 interface lo0.200
+set routing-instances VRF3 interface lo0.300
+```
+
+#### Results
+```
+root@PE1# run show services rpm twamp server
+Connection  Client           Client  Server           Server   Session  Auth
+ID          address          port    address          port     count    mode
+        29  30.2.1.1          53108  100.100.1.1         900         1  Unauthenticated
+        30  31.2.2.1          59718  100.100.3.1         902         1  Unauthenticated
+        28  31.2.3.1          39126  100.100.2.1         901         1  Unauthenticated
+Session  Connection  Sender           Sender  Reflector        Reflector  Session    Auth
+ID       ID          address          port    address          port       state      mode
+     13          29  30.2.1.1          43148  100.100.1.1           5000  Active     Unauthenticated
+     14          30  31.2.2.1          41885  100.100.3.1           5000  Active     Unauthenticated
+     12          28  31.2.3.1          45628  100.100.2.1           5000  Active     Unauthenticated
+```
+
+## Statistics and Debugging
+Since these are hostbased PFE /inline using LU the statistics need to be checked in PFE.
+```
+VMX-0(PE1 vty)# show jnh inline-twamp statistics
+
+TWAMP Inline Server Data Statistics
+Num Data Packets Twamped in Lu   : 17816
+
+TWAMP Inline Client Data Statistics
+Num Data Packets Sent by Lu      : 0
+Num Data Packets Received by Lu  : 0
+Num Data Packets Sent by ukern   : 0
+Data Packets Tx bad len in ukern : 0
+Data Packets Tx error in ukern   : 0
+```
+
+You can also use firewall filters
+```
+set firewall family inet filter TWAMP-IN term 10 from protocol icmp
+set firewall family inet filter TWAMP-IN term 10 from protocol tcp
+set firewall family inet filter TWAMP-IN term 10 from protocol udp
+set firewall family inet filter TWAMP-IN term 10 then count COUNT-IN-TWAMP
+set firewall family inet filter TWAMP-IN term 10 then accept
+set firewall family inet filter TWAMP-IN term 20 then count TWAMP-OTHERS-IN
+set firewall family inet filter TWAMP-IN term 20 then accept
+set firewall family inet filter TWAMP-OUT term 10 from protocol icmp
+set firewall family inet filter TWAMP-OUT term 10 from protocol tcp
+set firewall family inet filter TWAMP-OUT term 10 from protocol udp
+set firewall family inet filter TWAMP-OUT term 10 then count COUNT-OUT-TWAMP
+set firewall family inet filter TWAMP-OUT term 10 then accept
+set firewall family inet filter TWAMP-OUT term 20 then count TWAMP-OTHERS-OUT
+set firewall family inet filter TWAMP-OUT term 20 then accept
+
+set interfaces si-0/0/0 unit 0 family inet
+set interfaces si-0/0/0 unit 10 rpm twamp-server
+set interfaces si-0/0/0 unit 10 family inet filter input TWAMP-IN
+set interfaces si-0/0/0 unit 10 family inet filter output TWAMP-OUT
+set interfaces si-0/0/0 unit 10 family inet address 45.1.1.1/32
+```
+
+### Issues with NAT
+If TWAMP Full is used and there is a firewall natting the source/dest IP, note that the TWAMP full uses TCP initially in the control connection message. The TWAMP payload carries the original client IP. Along the way only the outer
+header is NAT'd and we not see it work as exepcted. This is because the payload carries the session information and that would not be NAT'd. 
+For this, we need to enable ALG for TWAMP in the firewall to ensure it copies the payload information to the outer header.
+
+### Configure ALG on vSRX
+```
+set security alg twamp 
+```
+
+Another alternative is to use twamp-lite. This will ensure there is no control connection at all and just send the UDP probes. This will also by pass the NAT issue and it would work.
