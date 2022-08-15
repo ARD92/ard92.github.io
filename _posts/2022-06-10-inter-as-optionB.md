@@ -337,3 +337,23 @@ PING 100.4.1.1 (100.4.1.1) from 100.11.0.1 : 56(84) bytes of data.
 64 bytes from 100.4.1.1: icmp_seq=2 ttl=61 time=0.093 ms
 64 bytes from 100.4.1.1: icmp_seq=3 ttl=61 time=0.103 ms
 ```
+
+## How about multipath information ?
+Consider the below scenario 
+![topology](/images/multipath_same_rd.png)
+
+- Here the routes 10.10.10.10/32 is advertised from obce1 towards OB1 and OB11
+- The routes are part of the customer VPN . Both OB1 and OB11 advertise with same RD
+- Both the routes make it to the RR with different labels. However only one of them is advertised towards OB3
+- The end destination only receives one route 
+
+
+Consider the below scenario 
+![topology](/images/multipath_diff_rd.png)
+
+- In this scenario, route 10.10.10.10/32 is advertised from obce1 towards OB1 and OB11
+- The routes are part of customer VPN. Both OB1 and OB11 advertise to RR with `different RD`
+- Due to different RDs, both NLRIs make it to the RR and gets advertised towards OB3
+- OB3 and OB4 will see 2 routes in `bgp.l3vpn.0` table. One with RD from OB1 and another with RD advertised from OB11
+- The end destination would receive 2 routes towards destination. 
+- if using eBGP option B, different RDs are needed to carry multiplepaths.
