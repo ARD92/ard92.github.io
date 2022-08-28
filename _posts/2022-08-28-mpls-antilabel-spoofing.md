@@ -150,6 +150,23 @@ Peer: 10.1.1.7+63122 AS 65002  Local: 10.1.1.6+179 AS 65001
   Output Queue[2]: 0            (bgp.l3vpn.0, inet-vpn-unicast)
 ```
 
+## During static label allocation 
+This is applicable when advertising a static label also. The static labels are allocated on per prefix basis on BGP-LU. 
+Check [here](https://ard92.github.io/2022/08/15/assigning-static-lu-lables.html)
+
+The spoof check is done in such scenarios as well
+
+```
+
+root@P1> show route table spoof-check.mpls.0
+
+spoof-check.mpls.0: 2 destinations, 2 routes (2 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+1000000            *[VPN/170] 2d 06:14:47
+                       receive table inet.0, Pop
+```
+ 
 ## References
 - https://www.juniper.net/documentation/us/en/software/junos/multicast/topics/concept/anti-spoofing-support-for-mpls-labels.html
  
