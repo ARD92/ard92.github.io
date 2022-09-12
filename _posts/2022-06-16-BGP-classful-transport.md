@@ -86,6 +86,9 @@ protocols {
 ## Verification
 
 ### Enable BGP-CT
+```
+set routing-options transport-class auto-create
+```
 
 ## Validate
 
