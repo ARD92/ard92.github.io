@@ -20,6 +20,12 @@ pip install mdpdf
 ```
 mdpdf -o <output file name> <input md file > 
 ```
+### To insert footer
+```
+mdpdf -a aravind -t "Inline Monitoring" -f "v1.0, Aravind, {page}" -o inline-monitoring.pdf 2022-09-12-inline-monitoring.md
+```
+Note that 3 values should be provided in the template, else you might see errors. you can use Empty string.
+
 
 ## help
 ```
@@ -56,3 +62,4 @@ Options:
   --version                Show the version and exit.
   --help                   Show this message and exit.
 ```
+

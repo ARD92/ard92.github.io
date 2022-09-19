@@ -148,3 +148,173 @@ GTP-1                                                 949                   13
 #### Subsequent packets
 ![packetcapture](/images/inlinemon_pcap.png)
 
+#### Capture using tshark 
+
+##### Start tshark with decode CFLOW
+```
+/app # tshark -i pkt2 -d udp.port==1000,cflow -V src 20.1.1.2
+```
+
+##### Capture
+```
+Frame 6: 86 bytes on wire (688 bits), 86 bytes captured (688 bits) on interface pkt2, id 0
+    Interface id: 0 (pkt2)
+        Interface name: pkt2
+    Encapsulation type: Ethernet (1)
+    Arrival Time: Sep 19, 2022 16:41:45.982407681 UTC
+    [Time shift for this packet: 0.000000000 seconds]
+    Epoch Time: 1663605705.982407681 seconds
+    [Time delta from previous captured frame: 10.005030109 seconds]
+    [Time delta from previous displayed frame: 10.005030109 seconds]
+    [Time since reference or first frame: 32.096940181 seconds]
+    Frame Number: 6
+    Frame Length: 86 bytes (688 bits)
+    Capture Length: 86 bytes (688 bits)
+    [Frame is marked: False]
+    [Frame is ignored: False]
+    [Protocols in frame: eth:ethertype:ip:udp:cflow]
+Ethernet II, Src: 02:aa:01:10:01:01 (02:aa:01:10:01:01), Dst: 9a:51:3a:41:5c:73 (9a:51:3a:41:5c:73)
+    Destination: 9a:51:3a:41:5c:73 (9a:51:3a:41:5c:73)
+        Address: 9a:51:3a:41:5c:73 (9a:51:3a:41:5c:73)
+        .... ..1. .... .... .... .... = LG bit: Locally administered address (this is NOT the factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Source: 02:aa:01:10:01:01 (02:aa:01:10:01:01)
+        Address: 02:aa:01:10:01:01 (02:aa:01:10:01:01)
+        .... ..1. .... .... .... .... = LG bit: Locally administered address (this is NOT the factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Type: IPv4 (0x0800)
+Internet Protocol Version 4, Src: 20.1.1.2, Dst: 20.1.1.1
+    0100 .... = Version: 4
+    .... 0101 = Header Length: 20 bytes (5)
+    Differentiated Services Field: 0x00 (DSCP: CS0, ECN: Not-ECT)
+        0000 00.. = Differentiated Services Codepoint: Default (0)
+        .... ..00 = Explicit Congestion Notification: Not ECN-Capable Transport (0)
+    Total Length: 72
+    Identification: 0x1c88 (7304)
+    Flags: 0x00
+        0... .... = Reserved bit: Not set
+        .0.. .... = Don't fragment: Not set
+        ..0. .... = More fragments: Not set
+    Fragment Offset: 0
+    Time to Live: 250
+    Protocol: UDP (17)
+    Header Checksum: 0x7a18 [validation disabled]
+    [Header checksum status: Unverified]
+    Source Address: 20.1.1.2
+    Destination Address: 20.1.1.1
+User Datagram Protocol, Src Port: 50151, Dst Port: 1000
+    Source Port: 50151
+    Destination Port: 1000
+    Length: 52
+    [Checksum: [missing]]
+    [Checksum Status: Not present]
+    [Stream index: 0]
+    [Timestamps]
+        [Time since first frame: 32.096940181 seconds]
+        [Time since previous frame: 10.005030109 seconds]
+    UDP payload (44 bytes)
+Cisco NetFlow/IPFIX
+    Version: 10
+    Length: 44
+    Timestamp: Sep 19, 2022 16:41:45.000000000 UTC
+        ExportTime: 1663605705
+    FlowSequence: 6
+    Observation Domain Id: 16842752
+    Set 1 [id=2] (Data Template): 1024
+        FlowSet Id: Data Template (V10 [IPFIX]) (2)
+        FlowSet Length: 28
+        Template (Id = 1024, Count = 4)
+            Template Id: 1024
+            Field Count: 4
+            Field (1/4): 137 [pen: Juniper Networks, Inc.]
+                1... .... .... .... = Pen provided: Yes
+                .000 0000 1000 1001 = Type: 137 [pen: Juniper Networks, Inc.]
+                Length: 4
+                PEN: Juniper Networks, Inc. (2636)
+            Field (2/4): DIRECTION
+                0... .... .... .... = Pen provided: No
+                .000 0000 0011 1101 = Type: DIRECTION (61)
+                Length: 1
+            Field (3/4): dataLinkFrameSize
+                0... .... .... .... = Pen provided: No
+                .000 0001 0011 1000 = Type: dataLinkFrameSize (312)
+                Length: 2
+            Field (4/4): dataLinkFrameSection
+                0... .... .... .... = Pen provided: No
+                .000 0001 0011 1011 = Type: dataLinkFrameSection (315)
+                Length: 65535 [i.e.: "Variable Length"]
+
+Frame 7: 157 bytes on wire (1256 bits), 157 bytes captured (1256 bits) on interface pkt2, id 0
+    Interface id: 0 (pkt2)
+        Interface name: pkt2
+    Encapsulation type: Ethernet (1)
+    Arrival Time: Sep 19, 2022 16:41:49.073824363 UTC
+    [Time shift for this packet: 0.000000000 seconds]
+    Epoch Time: 1663605709.073824363 seconds
+    [Time delta from previous captured frame: 3.091416682 seconds]
+    [Time delta from previous displayed frame: 3.091416682 seconds]
+    [Time since reference or first frame: 35.188356863 seconds]
+    Frame Number: 7
+    Frame Length: 157 bytes (1256 bits)
+    Capture Length: 157 bytes (1256 bits)
+    [Frame is marked: False]
+    [Frame is ignored: False]
+    [Protocols in frame: eth:ethertype:ip:udp:cflow]
+Ethernet II, Src: 02:aa:01:10:01:01 (02:aa:01:10:01:01), Dst: 9a:51:3a:41:5c:73 (9a:51:3a:41:5c:73)
+    Destination: 9a:51:3a:41:5c:73 (9a:51:3a:41:5c:73)
+        Address: 9a:51:3a:41:5c:73 (9a:51:3a:41:5c:73)
+        .... ..1. .... .... .... .... = LG bit: Locally administered address (this is NOT the factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Source: 02:aa:01:10:01:01 (02:aa:01:10:01:01)
+        Address: 02:aa:01:10:01:01 (02:aa:01:10:01:01)
+        .... ..1. .... .... .... .... = LG bit: Locally administered address (this is NOT the factory default)
+        .... ...0 .... .... .... .... = IG bit: Individual address (unicast)
+    Type: IPv4 (0x0800)
+Internet Protocol Version 4, Src: 20.1.1.2, Dst: 20.1.1.1
+    0100 .... = Version: 4
+    .... 0101 = Header Length: 20 bytes (5)
+    Differentiated Services Field: 0x00 (DSCP: CS0, ECN: Not-ECT)
+        0000 00.. = Differentiated Services Codepoint: Default (0)
+        .... ..00 = Explicit Congestion Notification: Not ECN-Capable Transport (0)
+    Total Length: 143
+    Identification: 0x34a4 (13476)
+    Flags: 0x00
+        0... .... = Reserved bit: Not set
+        .0.. .... = Don't fragment: Not set
+        ..0. .... = More fragments: Not set
+    Fragment Offset: 0
+    Time to Live: 250
+    Protocol: UDP (17)
+    Header Checksum: 0x61b5 [validation disabled]
+    [Header checksum status: Unverified]
+    Source Address: 20.1.1.2
+    Destination Address: 20.1.1.1
+User Datagram Protocol, Src Port: 50151, Dst Port: 1000
+    Source Port: 50151
+    Destination Port: 1000
+    Length: 123
+    [Checksum: [missing]]
+    [Checksum Status: Not present]
+    [Stream index: 0]
+    [Timestamps]
+        [Time since first frame: 35.188356863 seconds]
+        [Time since previous frame: 3.091416682 seconds]
+    UDP payload (115 bytes)
+Cisco NetFlow/IPFIX
+    Version: 10
+    Length: 115
+    Timestamp: Sep 19, 2022 16:41:48.000000000 UTC
+        ExportTime: 1663605708
+    FlowSequence: 6
+    Observation Domain Id: 16842752
+    Set 1 [id=1024] (1 flows)
+        FlowSet Id: (Data) (1024)
+        FlowSet Length: 99
+        [Template Frame: 2]
+        Flow 1
+            Enterprise Private entry: (Juniper Networks, Inc.) Type 137: Value (hex bytes): 18 00 01 44
+            Direction: Ingress (0)
+            Data Link Frame Size: 87
+            Data Link Frame Section: 02aa01100100b644665e337c080045000049000000000011a4a00a0101020a01010103e8…
+                String_len_short: 87
+```
