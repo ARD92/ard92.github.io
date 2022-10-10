@@ -141,6 +141,10 @@ once the charts are edited, install the helm chart.
 helm install jcnr .
 ```
 
+## If you want to use uio_generic
+```
+sudo apt install linux-modules-extra-5.4.0-126-generic
+```
 ## Troubleshooting
 1. pod doesnt initialize 
     - kubectl describe pods <podname> -n <namespace> 
@@ -151,4 +155,17 @@ helm install jcnr .
 3. If hostname is not "master", label might need to be added 
     ```
     kubectl label node ubuntu node-role.kubernetes.io/master=
+    ```
+4. if JCNR is using virtio based interfaces. i.e. AIO k8s cluster brought up on KVM VMs using virtio interfaces
+    This is a common scenario for testing purposes where SRIOV resources arent available. In such cases ensure the below is applied to VM
+    ```
+    modprobe 8021q && \
+    modprobe vfio-pci && \
+    echo Y > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode
+    ```
+
+5. Install K9s for debugging 
+    ```
+    curl -sS https://webinstall.dev/k9s | bash
+    export PATH="/root/.local/bin:$PATH"
     ```
