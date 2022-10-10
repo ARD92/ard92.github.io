@@ -147,15 +147,21 @@ sudo apt install linux-modules-extra-5.4.0-126-generic
 ```
 ## Troubleshooting
 1. pod doesnt initialize 
-    - kubectl describe pods <podname> -n <namespace> 
+   ```
+   kubectl describe pods <podname> -n <namespace> 
+   ```
 
 2. Pods not scheduled. 
     - This could be because the node may not be tainted. Modify them accordingly to allow pod scheduling since this should be an all in one cluster. The master node itself will run pods.
-
+    ```
+    kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+    ```
+ 
 3. If hostname is not "master", label might need to be added 
     ```
     kubectl label node ubuntu node-role.kubernetes.io/master=
     ```
+
 4. if JCNR is using virtio based interfaces. i.e. AIO k8s cluster brought up on KVM VMs using virtio interfaces
     This is a common scenario for testing purposes where SRIOV resources arent available. In such cases ensure the below is applied to VM
     ```
@@ -168,4 +174,62 @@ sudo apt install linux-modules-extra-5.4.0-126-generic
     ```
     curl -sS https://webinstall.dev/k9s | bash
     export PATH="/root/.local/bin:$PATH"
+    ```
+
+6. Segmentation fault 
+    ```
+     kubectl logs contrail-vrouter-masters-7jmch -n contrail
+
+    Defaulted container "contrail-vrouter-agent" out of: contrail-vrouter-agent, contrail-vrouter-agent-dpdk, contrail-vrouter-telemetry-exporter, contrail-init (init), contrail-vrouter-kernel-init-dpdk (init)
+    panic: runtime error: invalid memory address or nil pointer dereference
+    [signal SIGSEGV: segmentation violation code=0x1 addr=0xa0 pc=0x12e2dc2]
+
+    goroutine 67 [running]:
+    main.(*cmdLayer).cmdSignal(0x1fa74f8, 0x0, 0x16d2780, 0x1f263d8, 0x0, 0x0)
+    /go/src/ssd-git.juniper.net/contrail/cn2/vrouter-supervisor/main.go:35 +0x22
+    main.(*vrouterSupervisor).supervisorProcess.func2(0xc0005a68a0, 0xc0005a2870, 0xc00059c1cb, 0xc00059f440, 0xc0005c6150)
+    /go/src/ssd-git.juniper.net/contrail/cn2/vrouter-supervisor/main.go:240 +0x1fc
+    created by main.(*vrouterSupervisor).supervisorProcess
+    /go/src/ssd-git.juniper.net/contrail/cn2/vrouter-supervisor/main.go:214 +0x51a
+    ```
+
+    This could be because of incorrect values.yaml. In the above case, it was because the bond interface configs were commented. solution is to comment the values but not the key
+
+    example of correct way to not use bond interface
+    
+    ```
+        bondInterfaceConfigs:
+    #  - name: "bond0"
+    #    mode: 1             # ACTIVE_BACKUP MODE
+    #    slaveInterfaces:
+    #    - "ens1f1"
+    ```
+
+7. uio_pci_generic module missing 
+    ```
+    root@ubuntu:~/Juniper_Cloud_Native_Router_22.3/helm_charts/jcnr/charts/jcnr-vrouter# modprobe uio_pci_generic
+    modprobe: FATAL: Module uio_pci_generic not found in directory /lib/modules/5.4.0-126-generic
+    root@ubuntu:~/Juniper_Cloud_Native_Router_22.3/helm_charts/jcnr/charts/jcnr-vrouter# apt install linux-modules-extra-5.4.0-126-generic
+    ``` 
+    you would have to install 
+    ```
+    apt install linux-modules-extra-5.4.0-126-generic
+    sudo modprobe uio_pci_generic
+    ```
+
+    verify
+    ```
+    root@ubuntu:~/Juniper_Cloud_Native_Router_22.3/helm_charts/jcnr/charts/jcnr-vrouter# lsmod | grep uio_pci_generic
+    uio_pci_generic        16384  0
+    uio                    20480  1 uio_pci_generic
+    ```
+
+8. Verify vfio is loaded
+    Ubuntu 20.04 is already loaded with vfio modules. you can validate by 
+    ```
+    root@ubuntu:~/Juniper_Cloud_Native_Router_22.3/helm_charts/jcnr/charts/jcnr-vrouter# cat /lib/modules/$(uname -r)/modules.builtin | grep vfio
+    kernel/drivers/vfio/vfio.ko
+    kernel/drivers/vfio/vfio_virqfd.ko
+    kernel/drivers/vfio/vfio_iommu_type1.ko
+    kernel/drivers/vfio/pci/vfio-pci.ko
     ```
