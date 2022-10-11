@@ -133,12 +133,35 @@ This will be added later once vrouter comes up.
 
 ### Huge pages values
 Ensure huge pages is enabled, else vrouter will not come up. modify jcnr/jcnr-vrouter/values.yaml file. Use either 2Mi or Gi form accordingly. By default things would be in 2Mi values.
+When editing the helm chart, ensure you use format correctly. If everthing is specified correctly you will notice the hugepages being used under `more /proc/meminfo | grep Huge`
 
 ## Apply helm chart 
 once the charts are edited, install the helm chart.
 
 ```
 helm install jcnr .
+```
+## Validate all containers
+Notice that if vRouter does not start, cRPD also will not start and may be in crashLoopBackoff. This is because a liveness/Readines probe keeps running. So ensure vrouter is UP
+
+```
+root@ubuntu:~# kubectl get pods -A
+NAMESPACE         NAME                                     READY   STATUS      RESTARTS        AGE
+contrail-deploy   contrail-k8s-deployer-797d87c4b9-5vpsb   1/1     Running     1 (10m ago)     16m
+contrail          contrail-vrouter-masters-vkr9c           3/3     Running     0               6m59s
+default           delete-crpd-dirs-nxm8f                   0/1     Completed   0               22m
+default           delete-vrouter-dirs-8mwkv                0/1     Completed   0               22m
+kube-flannel      kube-flannel-ds-c2jwr                    1/1     Running     6 (8m27s ago)   2d13h
+kube-system       coredns-565d847f94-jrlb5                 1/1     Running     2 (10m ago)     3d12h
+kube-system       coredns-565d847f94-rwjzq                 1/1     Running     2 (10m ago)     3d12h
+kube-system       etcd-ubuntu                              1/1     Running     4 (9m1s ago)    3d12h
+kube-system       kube-apiserver-ubuntu                    1/1     Running     4 (9m1s ago)    3d12h
+kube-system       kube-controller-manager-ubuntu           1/1     Running     4 (9m1s ago)    3d12h
+kube-system       kube-crpd-worker-ds-mvjbd                1/1     Running     8 (6m56s ago)   16m
+kube-system       kube-multus-ds-fj42f                     1/1     Running     3 (9m1s ago)    2d12h
+kube-system       kube-proxy-kmhnl                         1/1     Running     4 (9m1s ago)    3d12h
+kube-system       kube-scheduler-ubuntu                    1/1     Running     4 (9m1s ago)    3d12h
+kube-system       syslog-ng-f68c76988-86fvt                1/1     Running     2 (9m2s ago)    16m
 ```
 
 ## If you want to use uio_generic
@@ -233,3 +256,54 @@ sudo apt install linux-modules-extra-5.4.0-126-generic
     kernel/drivers/vfio/vfio_iommu_type1.ko
     kernel/drivers/vfio/pci/vfio-pci.ko
     ```
+
+9. vrouter continuously crashes with illegal instruction 
+    ```
+    time="2022-10-10T14:37:29Z" level=info msg="vrouter dpdk process exited"
+    time="2022-10-10T14:37:29Z" level=error msg="vrouter dpdk process exit response: signal: illegal instruction"
+    time="2022-10-10T14:37:29Z" level=info msg="start restoring l2 interfaces"
+    ```
+    Ensure the avx2 instruction set is enabled on the compute. Without this vrouter will keep crashing. you can check the cpu flags on `lscpu`
+
+    Example
+    ```
+    root@k8s-worker2:~# lscpu
+    Architecture:                    x86_64
+    CPU op-mode(s):                  32-bit, 64-bit
+    Byte Order:                      Little Endian
+    Address sizes:                   46 bits physical, 48 bits virtual
+    CPU(s):                          48
+    On-line CPU(s) list:             0-47
+    Thread(s) per core:              2
+    Core(s) per socket:              12
+    Socket(s):                       2
+    NUMA node(s):                    2
+    Vendor ID:                       GenuineIntel
+    CPU family:                      6
+    Model:                           63
+    Model name:                      Intel(R) Xeon(R) CPU E5-2690 v3 @ 2.60GHz
+    Stepping:                        2
+    CPU MHz:                         3255.867
+    CPU max MHz:                     3500.0000
+    CPU min MHz:                     1200.0000
+    BogoMIPS:                        5194.11
+    Virtualization:                  VT-x
+    L1d cache:                       768 KiB
+    L1i cache:                       768 KiB
+    L2 cache:                        6 MiB
+    L3 cache:                        60 MiB
+    NUMA node0 CPU(s):               0-11,24-35
+    NUMA node1 CPU(s):               12-23,36-47
+    Vulnerability Itlb multihit:     KVM: Mitigation: Split huge pages
+    Vulnerability L1tf:              Mitigation; PTE Inversion; VMX conditional cache flushes, SMT vulnerable
+    Vulnerability Mds:               Mitigation; Clear CPU buffers; SMT vulnerable
+    Vulnerability Meltdown:          Mitigation; PTI
+    Vulnerability Spec store bypass: Mitigation; Speculative Store Bypass disabled via prctl and seccomp
+    Vulnerability Spectre v1:        Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+    Vulnerability Spectre v2:        Mitigation; Retpolines, IBPB conditional, IBRS_FW, STIBP conditional, RSB filling
+    Vulnerability Srbds:             Not affected
+    Vulnerability Tsx async abort:   Not affected
+    Flags:                           fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc c
+                                     puid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid dca sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm cpuid_fault epb invpcid
+                                     _single pti intel_ppin ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid cqm xsaveopt cqm_llc cqm_occup_llc dtherm ida arat pln pts md_clear flush_l1d
+        ```
