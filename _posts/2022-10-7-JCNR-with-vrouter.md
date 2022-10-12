@@ -4,6 +4,16 @@ title: JCNR as a cell site router in O-RAN/V-RAN deployments in L2 model
 tags: linux kubernetes 
 ---
 
+## Topology considered 
+Below topology is considered for the remainder of the post. 
+![topology](/images/jcnr_l2_topo.png)
+
+- each JCNR block represents a VM with k8s installed as an all in one cluster with 3 interfaces (1 mgmt, 1 RU side and 1 towards TOR).
+- Both the VMs are connected to a common bridge
+- since this aims only at functional testing, virtio interfaces are considered
+- SRIOV VFs/PFs can be used if needed 
+- Both VMs are spun up on the same compute node and is orchestrated using kubevirt. Refer to the next section for steps to bring up vm
+
 ## Bring up testbed with VMs 
 Follow [here](https://github.com/ARD92/kubevirt-manifests/tree/main/ubuntu_vm) to bring up 2 VMs to test JCNR vrouter for functional testing 
 
@@ -228,7 +238,8 @@ sudo apt install linux-modules-extra-5.4.0-126-generic
     #    - "ens1f1"
     ```
 
-7. uio_pci_generic module missing 
+7. uio_pci_generic module missing
+ 
     ```
     root@ubuntu:~/Juniper_Cloud_Native_Router_22.3/helm_charts/jcnr/charts/jcnr-vrouter# modprobe uio_pci_generic
     modprobe: FATAL: Module uio_pci_generic not found in directory /lib/modules/5.4.0-126-generic
@@ -304,6 +315,16 @@ sudo apt install linux-modules-extra-5.4.0-126-generic
     Vulnerability Srbds:             Not affected
     Vulnerability Tsx async abort:   Not affected
     Flags:                           fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc c
-                                     puid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid dca sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm cpuid_fault epb invpcid
-                                     _single pti intel_ppin ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid cqm xsaveopt cqm_llc cqm_occup_llc dtherm ida arat pln pts md_clear flush_l1d
-        ```
+                                        puid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid dca sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm cpuid_fault epb invpcid
+                                         _single pti intel_ppin ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid cqm xsaveopt cqm_llc cqm_occup_llc dtherm ida arat pln pts md_clear flush_l1d
+   ```
+
+10. Dpdk pod crashes with the error
+    ```
+    05:06:07,478 EAL: VFIO support initialized                                 
+   2 05:06:07,647 EAL: eal_memalloc_alloc_seg_bulk(): couldn't find suitable me
+   2 05:06:07,647 EAL: Cannot init memory                                      
+   2 05:06:07,648 VROUTER: Error initializing EAL                              
+   2 05:06:07,648 VROUTER: Error DPDK initialization failed
+   ```
+   In this case uio_pci_generic module would be missing. Ensure that it is loaded. Refer to troubleshooting steps #7 
