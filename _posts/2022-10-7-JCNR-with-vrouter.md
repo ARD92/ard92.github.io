@@ -565,140 +565,130 @@ root@k8s-worker2:~# tcpdump -nei br1
 ## Verifying vrouter traffic handling
 
 1. Ensure vrouter VIFs are created
-```
-root@ubuntu:~# kubectl exec -it contrail-vrouter-masters-s7m6m -n contrail sh
-kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
-Defaulted container "contrail-vrouter-agent" out of: contrail-vrouter-agent, contrail-vrouter-agent-dpdk, contrail-vrouter-telemetry-exporter, contrail-init (init), contrail-vrouter-kernel-init-dpdk (init)
-# vif --list
-Vrouter Operation Mode: PureL2
-Vrouter Interface Table
-
-Flags: P=Policy, X=Cross Connect, S=Service Chain, Mr=Receive Mirror
-       Mt=Transmit Mirror, Tc=Transmit Checksum Offload, L3=Layer 3, L2=Layer 2
-       D=DHCP, Vp=Vhost Physical, Pr=Promiscuous, Vnt=Native Vlan Tagged
-       Mnp=No MAC Proxy, Dpdk=DPDK PMD Interface, Rfl=Receive Filtering Offload, Mon=Interface is Monitored
-       Uuf=Unknown Unicast Flood, Vof=VLAN insert/strip offload, Df=Drop New Flows, L=MAC Learning Enabled
-       Proxy=MAC Requests Proxied Always, Er=Etree Root, Mn=Mirror without Vlan Tag, HbsL=HBS Left Intf
-       HbsR=HBS Right Intf, Ig=Igmp Trap Enabled, Ml=MAC-IP Learning Enabled, Me=Multicast Enabled
-
-vif0/0      Socket: unix
-            Type:Agent HWaddr:00:00:5e:00:01:00
-            Vrf:65535 Flags:L2 QOS:-1 Ref:3
-            RX queue errors to lcore 0 0 0 0 0 0 0 0 0 0 0 0
-            RX packets:0  bytes:0 errors:0
-            TX packets:2071  bytes:215384 errors:0
-            Drops:0
-
-vif0/1      PCI: 0000:02:00.0
-            Type:Physical HWaddr:e6:53:a9:ac:30:45
-            Vrf:65535 Flags:L2Vof QOS:-1 Ref:7
-            RX queue  packets:177510037 errors:40999
-            RX queue errors to lcore 0 0 0 0 0 0 0 0 0 0 0 40999
-            Fabric Interface: 0000:02:00.0  Status: UP  Driver: net_virtio
-            Vlan Mode: Trunk  Vlan: 100 1000-1007
-            RX packets:177510027  bytes:10650601620 errors:11
-            TX packets:60166656  bytes:3609999360 errors:0
-            Drops:109246546
-
-vif0/2      PCI: 0000:03:00.0
-            Type:Workload HWaddr:a6:7d:c3:ff:81:0e
-            Vrf:0 Flags:L2Vof QOS:-1 Ref:7
-            RX queue errors to lcore 0 0 0 0 0 0 0 0 0 0 0 0
-            Fabric Interface: 0000:03:00.0  Status: UP  Driver: net_virtio
-            Vlan Mode: Access  Vlan Id: 100  OVlan Id: 100
-            RX packets:0  bytes:0 errors:0
-            TX packets:109203965  bytes:6115422040 errors:0
-            Drops:0
-
-vif0/3      PMD: vhostnet1-79300016-c2af-4d05-94
-            Type:Virtual HWaddr:02:00:00:f1:91:62
-            Vrf:65535 Flags:L2 QOS:-1 Ref:9
-            RX port   packets:60176672 errors:0
-            RX queue  packets:60168416 errors:8256
-            RX queue errors to lcore 0 0 0 0 0 0 0 0 0 0 0 8256
-            Vlan Mode: Trunk  Vlan: 100
-            RX packets:60168416  bytes:3610104960 errors:0
-            TX packets:177511819  bytes:10650709140 errors:0
-            Drops:8756
-            TX port   packets:112247966 errors:65263853
-```
+    ```
+    root@ubuntu:~# kubectl exec -it contrail-vrouter-masters-s7m6m -n contrail sh
+    kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+    Defaulted container "contrail-vrouter-agent" out of: contrail-vrouter-agent, contrail-vrouter-agent-dpdk, contrail-vrouter-telemetry-exporter, contrail-init (init), contrail-vrouter-kernel-init-dpdk (init)
+    # vif --list
+    Vrouter Operation Mode: PureL2
+    Vrouter Interface Table
+    
+    Flags: P=Policy, X=Cross Connect, S=Service Chain, Mr=Receive Mirror
+           Mt=Transmit Mirror, Tc=Transmit Checksum Offload, L3=Layer 3, L2=Layer 2
+           D=DHCP, Vp=Vhost Physical, Pr=Promiscuous, Vnt=Native Vlan Tagged
+           Mnp=No MAC Proxy, Dpdk=DPDK PMD Interface, Rfl=Receive Filtering Offload, Mon=Interface is Monitored
+           Uuf=Unknown Unicast Flood, Vof=VLAN insert/strip offload, Df=Drop New Flows, L=MAC Learning Enabled
+           Proxy=MAC Requests Proxied Always, Er=Etree Root, Mn=Mirror without Vlan Tag, HbsL=HBS Left Intf
+           HbsR=HBS Right Intf, Ig=Igmp Trap Enabled, Ml=MAC-IP Learning Enabled, Me=Multicast Enabled
+    
+    vif0/0      Socket: unix
+                Type:Agent HWaddr:00:00:5e:00:01:00
+                Vrf:65535 Flags:L2 QOS:-1 Ref:3
+                RX queue errors to lcore 0 0 0 0 0 0 0 0 0 0 0 0
+                RX packets:0  bytes:0 errors:0
+                TX packets:2071  bytes:215384 errors:0
+                Drops:0
+    
+    vif0/1      PCI: 0000:02:00.0
+                Type:Physical HWaddr:e6:53:a9:ac:30:45
+                Vrf:65535 Flags:L2Vof QOS:-1 Ref:7
+                RX queue  packets:177510037 errors:40999
+                RX queue errors to lcore 0 0 0 0 0 0 0 0 0 0 0 40999
+                Fabric Interface: 0000:02:00.0  Status: UP  Driver: net_virtio
+                Vlan Mode: Trunk  Vlan: 100 1000-1007
+                RX packets:177510027  bytes:10650601620 errors:11
+                TX packets:60166656  bytes:3609999360 errors:0
+                Drops:109246546
+    
+    vif0/2      PCI: 0000:03:00.0
+                Type:Workload HWaddr:a6:7d:c3:ff:81:0e
+                Vrf:0 Flags:L2Vof QOS:-1 Ref:7
+                RX queue errors to lcore 0 0 0 0 0 0 0 0 0 0 0 0
+                Fabric Interface: 0000:03:00.0  Status: UP  Driver: net_virtio
+                Vlan Mode: Access  Vlan Id: 100  OVlan Id: 100
+                RX packets:0  bytes:0 errors:0
+                TX packets:109203965  bytes:6115422040 errors:0
+                Drops:0
+    
+    vif0/3      PMD: vhostnet1-79300016-c2af-4d05-94
+                Type:Virtual HWaddr:02:00:00:f1:91:62
+                Vrf:65535 Flags:L2 QOS:-1 Ref:9
+                RX port   packets:60176672 errors:0
+                RX queue  packets:60168416 errors:8256
+                RX queue errors to lcore 0 0 0 0 0 0 0 0 0 0 0 8256
+                Vlan Mode: Trunk  Vlan: 100
+                RX packets:60168416  bytes:3610104960 errors:0
+                TX packets:177511819  bytes:10650709140 errors:0
+                Drops:8756
+                TX port   packets:112247966 errors:65263853
+    ```
 
 2. Once traffic is running we can check mac address on vrouter and crpd 
-### From vrouter
-```
-# purel2cli --mac show
-==================================================
-||    MAC           vlan       port    hit_count||
-==================================================
-02:00:00:8d:66:74 100        1          190833409
-02:00:00:f1:91:62 100        3          50383437
-```
+    From vrouter
+    ```
+    # purel2cli --mac show
+    ==================================================
+    ||    MAC           vlan       port    hit_count||
+    ==================================================
+    02:00:00:8d:66:74 100        1          190833409
+    02:00:00:f1:91:62 100        3          50383437
+    ```
 
-### from crpd 
-```
-root@ubuntu> show bridge mac-table
-
-MAC flags         (S - Static MAC, D - Dynamic MAC)
-Routing Instance : default-domain:default-project:ip-fabric:__default__
-Bridging domain VLAN id : 100
-MAC                  MAC                Logical
-address              flags              interface
-
-02:00:00:8d:66:74      D                 enp2s0
-02:00:00:f1:91:62      D                 vhostnet1-79300016-c2af-4d05-94
-
-
-root@ubuntu> show bridge statistics
-
-Bridge domain vlan-id: 100
-   Local interface: enp2s0
-      Broadcast packets Tx  : 0           Rx  : 0
-      Multicast packets Tx  : 0           Rx  : 0
-      Unicast packets Tx    : 101593656   Rx  : 218462929
-      Broadcast bytes Tx    : 0           Rx  : 0
-      Multicast bytes Tx    : 0           Rx  : 0
-      Unicast bytes Tx      : 6095619360  Rx  : 13107775740
-      Flooded packets       : 0
-      Flooded bytes         : 0
-   Local interface: enp3s0
-      Broadcast packets Tx  : 0           Rx  : 0
-      Multicast packets Tx  : 0           Rx  : 0
-      Unicast packets Tx    : 0           Rx  : 0
-      Broadcast bytes Tx    : 0           Rx  : 0
-      Multicast bytes Tx    : 0           Rx  : 0
-      Unicast bytes Tx      : 0           Rx  : 0
-      Flooded packets       : 109203965
-      Flooded bytes         : 6552237900
-   Local interface: vhostnet1-79300016-c2af-4d05-94
-      Broadcast packets Tx  : 0           Rx  : 0
-      Multicast packets Tx  : 0           Rx  : 0
-      Unicast packets Tx    : 109258964   Rx  : 101593664
-      Broadcast bytes Tx    : 0           Rx  : 0
-      Multicast bytes Tx    : 0           Rx  : 0
-      Unicast bytes Tx      : 6555537840  Rx  : 6095619840
-      Flooded packets       : 109203965
-      Flooded bytes         : 6552237900
-```
+    from crpd 
+    ```
+    root@ubuntu> show bridge mac-table
+    
+    MAC flags         (S - Static MAC, D - Dynamic MAC)
+    Routing Instance : default-domain:default-project:ip-fabric:__default__
+    Bridging domain VLAN id : 100
+    MAC                  MAC                Logical
+    address              flags              interface
+    
+    02:00:00:8d:66:74      D                 enp2s0
+    02:00:00:f1:91:62      D                 vhostnet1-79300016-c2af-4d05-94
+    
+    
+    root@ubuntu> show bridge statistics
+    
+    Bridge domain vlan-id: 100
+       Local interface: enp2s0
+          Broadcast packets Tx  : 0           Rx  : 0
+          Multicast packets Tx  : 0           Rx  : 0
+          Unicast packets Tx    : 101593656   Rx  : 218462929
+          Broadcast bytes Tx    : 0           Rx  : 0
+          Multicast bytes Tx    : 0           Rx  : 0
+          Unicast bytes Tx      : 6095619360  Rx  : 13107775740
+          Flooded packets       : 0
+          Flooded bytes         : 0
+       Local interface: enp3s0
+          Broadcast packets Tx  : 0           Rx  : 0
+          Multicast packets Tx  : 0           Rx  : 0
+          Unicast packets Tx    : 0           Rx  : 0
+          Broadcast bytes Tx    : 0           Rx  : 0
+          Multicast bytes Tx    : 0           Rx  : 0
+          Unicast bytes Tx      : 0           Rx  : 0
+          Flooded packets       : 109203965
+          Flooded bytes         : 6552237900
+       Local interface: vhostnet1-79300016-c2af-4d05-94
+          Broadcast packets Tx  : 0           Rx  : 0
+          Multicast packets Tx  : 0           Rx  : 0
+          Unicast packets Tx    : 109258964   Rx  : 101593664
+          Broadcast bytes Tx    : 0           Rx  : 0
+          Multicast bytes Tx    : 0           Rx  : 0
+          Unicast bytes Tx      : 6555537840  Rx  : 6095619840
+          Flooded packets       : 109203965
+          Flooded bytes         : 6552237900
+    ```
 
 3. Check traffic stats
-```
-vif --list --rate
+    ```
+    vif --list --rate
 
-
-Interface rate statistics
--------------------------
-
-Interface name                VIF ID                        RX                            TX
-                                                      Errors   Packets              Errors   Packets
-
-Agent: unix                   vif0/0                  0        0                    0        0
-
-
-Physical: 0000:02:00.0        vif0/1                  0        146352               0        147263
-
-
-Workload: 0000:03:00.0        vif0/2                  0        0                    0        0
-
-
-Virtual: vhostnet1-79300016-c2af-4d05-94vif0/3                  0        147263               0        146320
-```
+    Interface rate statistics
+    -------------------------
+    Interface name                VIF ID                        RX                            TX
+    Agent: unix                   vif0/0                  0        0                    0        0
+    Physical: 0000:02:00.0        vif0/1                  0        146352               0        147263
+    Workload: 0000:03:00.0        vif0/2                  0        0                    0        0
+    Virtual: vhostnet1-79300016-c2af-4d05-94vif0/3                  0        147263               0        146320
+    ```
