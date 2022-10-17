@@ -377,6 +377,7 @@ sudo apt install linux-modules-extra-5.4.0-126-generic
         }
     }'
     ```
+
 ## Run a dpdk pod to test traffic 
 We can use dpdk pktgen to test out traffic across the JCNR VMs. 
 
@@ -401,6 +402,7 @@ spec:
     "kubeConfig":"/etc/kubernetes/kubelet.conf"
   }'
 ```
+
 Apply the NAD
 ```
 kubectl apply -f nad_bd.yml
