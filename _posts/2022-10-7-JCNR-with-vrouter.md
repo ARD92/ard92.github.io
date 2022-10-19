@@ -1,7 +1,7 @@
 ---
 layout: post
 title: JCNR as a cell site router in O-RAN/V-RAN deployments in L2 model
-tags: linux kubernetes 
+tags: juniper linux kubernetes 
 ---
 
 ## Topology considered 
