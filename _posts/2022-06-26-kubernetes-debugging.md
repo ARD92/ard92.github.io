@@ -26,3 +26,10 @@ This can be used when there are 100's of evicted pods and you want to delete all
 ```
 kubectl get pods | grep Evicted | awk '{print $1}' | xargs kubectl delete pod
 ```
+
+## Advertise out of a specific interface
+Typically k8s picks the interface with default IP when creating the cluster using kubeadm init. One can specify the interface in order to advertise the API.
+using the below flag in `kubeadm init` 
+```
+--api-advertise-addresses=<the eth1 ip addr>
+```
