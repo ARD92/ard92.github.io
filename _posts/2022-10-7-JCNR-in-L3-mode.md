@@ -643,6 +643,15 @@ root@k8s-worker2:~# tcpdump -nei k8s-l3brvrouter
         ```
         crictl logs <crpd-container-id>
         ```
+    e. add new license by converting to base64
+        ```
+        # store license in a file named license.txt
+        
+        #Run the below to generate a base64 value   
+        base64 license.txt
+
+        #save the generated value into jcnr-secrets.yaml file
+        ```
 5. cRPD started but no configs present
     This is because jdeployer failed provisioning the configs due to errors present in templates. This could be mostly in the file `jcnr-secrets` because thats the user fed file. 
     the remaining templates files are pre-built so they are usually syntax checked and correct. Verify if there are additional characters or intendation issues. These would cause the 
@@ -669,4 +678,12 @@ root@k8s-worker2:~# tcpdump -nei k8s-l3brvrouter
 
 7. dpdk packetgen app traffic not passing
     check the smac and dmac address. If this is incorrect traffic would not pass and would get dropped. 
-    in L3 mode ensure the dmac used is `00:00:5e:00:01:00`. without this no traffic would be passed.  
+    in L3 mode ensure the dmac used is `00:00:5e:00:01:00`. without this no traffic would be passed. 
+
+8. BGP sessions dont come up with worker crpd and master crpd RR.
+    - enable traceoptions for bgp on the crpd to identify the issue. 
+    -  sometimes the TCP port could cause an issue. Try deleting the TCP port for BGP connection
+    ```
+    deactivate groups base protocols bgp group CNI tcp-connect-port
+    ```
+
