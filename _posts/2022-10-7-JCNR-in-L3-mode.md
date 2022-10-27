@@ -623,11 +623,11 @@ root@k8s-worker2:~# tcpdump -nei k8s-l3brvrouter
 
 4. cRPD errors due to license failure
 
-If license failures occur, then cRPD would not start at all. This can be identified by looking at docker logs for cRPD 
-    - find crpd running on node 
-        ```
-        kubectl get pods -A -o wide | grep crpd
-        ```
+    a. If license failures occur, then cRPD would not start at all. This can be identified by looking at docker logs for cRPD 
+        - find crpd running on node 
+            ```
+            kubectl get pods -A -o wide | grep crpd
+            ```
     b. login to the node
     c. find the crpd container id
         ```
