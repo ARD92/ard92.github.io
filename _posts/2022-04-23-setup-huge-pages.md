@@ -118,3 +118,28 @@ DirectMap4k:     1085948 kB
 DirectMap2M:    16607232 kB
 DirectMap1G:    252706816 kB
 ```
+
+## Verify if Intel VT-x is enabled ?
+
+```
+root@k8s-master:~# dmesg | grep -i DMAR-IR
+dvuser57@ryp03:~/jcnr-R21.4/jcnr-vrouter$ sudo dmesg | grep -i DMAR-IR
+[    0.599047] DMAR-IR: IOAPIC id 8 under DRHD base  0x957fc000 IOMMU 9
+[    0.599050] DMAR-IR: HPET id 0 under DRHD base 0x957fc000
+[    0.599052] DMAR-IR: Queued invalidation will be enabled to support x2apic and Intr-remapping.
+[    0.601317] DMAR-IR: Enabled IRQ remapping in x2apic mode
+
+
+root@k8s-master:~/jcnr-R21.4/jcnr-vrouter$ ls -l /sys/class/iommu/
+total 0
+lrwxrwxrwx 1 root root 0 Nov 23 22:15 dmar0 -> ../../devices/virtual/iommu/dmar0
+lrwxrwxrwx 1 root root 0 Nov 23 22:15 dmar1 -> ../../devices/virtual/iommu/dmar1
+lrwxrwxrwx 1 root root 0 Nov 23 22:15 dmar5 -> ../../devices/virtual/iommu/dmar5
+lrwxrwxrwx 1 root root 0 Nov 23 22:15 dmar6 -> ../../devices/virtual/iommu/dmar6
+lrwxrwxrwx 1 root root 0 Nov 23 22:15 dmar7 -> ../../devices/virtual/iommu/dmar7
+lrwxrwxrwx 1 root root 0 Nov 23 22:15 dmar8 -> ../../devices/virtual/iommu/dmar8
+lrwxrwxrwx 1 root root 0 Nov 23 22:15 dmar9 -> ../../devices/virtual/iommu/dmar9
+
+root@k8s-master:~/jcnr-R21.4/jcnr-vrouter$ lscpu | grep VT-x
+Virtualization:                  VT-x
+```
