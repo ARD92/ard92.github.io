@@ -513,3 +513,47 @@ set security policies from-zone untrust to-zone trust policy allow-udp then perm
 ```
 
 Another alternative is to use twamp-lite. This will ensure there is no control connection at all and just send the UDP probes. This will also by pass the NAT issue and it would work.
+
+## Firewall filters on si- interfaces 
+When filters are applied on si interfaces, only data traffic hits it. The TWAMP control packets hits the RE a filter has to be on the protect host. 
+
+### Config
+
+```
+set firewall family inet filter PROTECTHOST term 10 from protocol tcp
+set firewall family inet filter PROTECTHOST term 10 from destination-port 862
+set firewall family inet filter PROTECTHOST term 10 then count TWAMP-CONTROL-LO0-filter
+set firewall family inet filter PROTECTHOST term 10 then accept
+set firewall family inet filter PROTECTHOST term accept-all then accept
+
+set firewall family inet filter TWAMP-NEW term 10 from protocol tcp
+set firewall family inet filter TWAMP-NEW term 10 from port 862
+set firewall family inet filter TWAMP-NEW term 10 then count COUNT-862-CONTROL
+set firewall family inet filter TWAMP-NEW term 10 then accept
+set firewall family inet filter TWAMP-NEW term 30 from port 5000
+set firewall family inet filter TWAMP-NEW term 30 then count TWAMP-SESSION
+set firewall family inet filter TWAMP-NEW term 30 then accept
+set firewall family inet filter TWAMP-NEW term 20 then count REMAINING-SESSION
+set firewall family inet filter TWAMP-NEW term 20 then accept
+```
+Apply the above config on the si- interface and notice that only TWAMP session packets will be hit. 
+
+```
+set interfaces si-0/0/0 unit 10 family inet filter input TWAMP-NEW
+set interfaces lo0 unit 0 family inet filter input PROTECTHOST
+```
+### Verify
+```
+Filter: TWAMP-NEW
+Counters:
+Name                                                Bytes              Packets
+COUNT-862-CONTROL                                       0                    0
+REMAINING-SESSION                                       0                    0
+TWAMP-SESSION                                      614238                 8902
+
+
+Filter: PROTECTHOST
+Counters:
+Name                                                Bytes              Packets
+TWAMP-CONTROL-LO0-filter                             1024                   13
+```
