@@ -48,7 +48,7 @@ once service is up, use the phone app and navigate to `manage lomorage account`.
 you can verify by going to `http://<lomorage-ip>:8000`
 
 ## References 
-- ![lomorage-installation](https://docs.lomorage.com/docs/Installation/lomorage-service/)
-- ![about-lomorage](https://lomorage.com/)
-- ![photo-prism-lomorage](https://lomorage.com/blog/2022/02/11/photoprism/)
+- [lomorage-installation](https://docs.lomorage.com/docs/Installation/lomorage-service/)
+- [about-lomorage](https://lomorage.com/)
+- [photo-prism-lomorage](https://lomorage.com/blog/2022/02/11/photoprism/)
 
