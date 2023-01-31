@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Compiling .proto files in golang  
+title: Compiling proto files in golang  
 tags: linux
 ---
 
