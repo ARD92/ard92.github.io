@@ -222,7 +222,7 @@ However, in optionB scenarios where PE is connected directly and when no transpo
 
 ## Topology 
 
-![topology](/images/6vpe_topology.png){:class="img-responsive"}
+![topology](/images/6vpe_topology.png)
 
 Here vmx1 and vsrx are acting as PE . vmx2 and vmx3 are option b routers. Here the routers are connected with MP-iBGP with next hop self in order to advertise routes. Since all routers are connected over iBGP, iBGP - iBGP route advertisements will not happen unless the routers act as RR. 
 Adding the cluster id will help advertise the routes. Family MPLS needs to be enabled on core facing interfaces. 
@@ -256,7 +256,7 @@ In order to achieve that, we need to do 2 things
 2. Configure a static route to the far end IP in inet.3 table with NH as the same IP 
 3. Apply the rib group to the static route 
 
-![rib-leak](/images/6vpe_leak.png){:class='img-responsive"}
+![rib-leak](/images/6vpe_leak.png)
 
 By doing the above steps we would now advertise the NH IP to inet6.3 and in the process of copying to inet6.3, junos automatically adds ::ffff to the IPv4 address making it resolvable. 
 
