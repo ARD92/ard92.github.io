@@ -86,4 +86,26 @@ protoc --proto_path=proto/ proto/jnx_authentication_service.proto --go_out=plugi
 protoc --proto_path=proto/ proto/jnx_common_addr_types.proto --go_out=plugins=grpc:. --plugin=protoc-gen-go=/go/bin/protoc-gen-go
 protoc --proto_path=proto/ proto/jnx_common_base_types.proto --go_out=plugins=grpc:. --plugin=protoc-gen-go=/go/bin/protoc-gen-go
 protoc --proto_path=proto/ proto/jnx_management_service.proto --go_out=plugins=grpc:. --plugin=protoc-gen-go=/go/bin/protoc-gen-go
-```  
+``` 
+
+## Verify 
+Once compiled you would the files based on the directory mentioned in the proto file 
+
+```
+root@b667831b2f5e:/app# tree jnx/
+jnx/
+`-- jet
+    |-- auth
+    |   `-- authentication_service.pb.go
+    |-- common
+    |   |-- jnx_addr.pb.go
+    |   `-- jnx_base_types.pb.go
+    |-- prpd
+    |   |-- prpd_common.pb.go
+    |   `-- prpd_service.pb.go
+    `-- routing
+        `-- bgp_route_service.pb.go
+``` 
+
+## How about compiling proto files in python ? 
+WIP
