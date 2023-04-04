@@ -6,7 +6,7 @@ tags: junos
 
 ## 6vPE overview
 
-6vPE defined in RFC 4659 on the other hand talks about offering VPN services for the IPv6 customers with the same IPv4 MPLS core.
+6vPE defined in RFC 4659 and talks about offering VPN services for the IPv6 customers with the same IPv4 MPLS core.
 Similar to how IPv4 routes are advertised over VPN with protocol next hop (PNH) as an IPv4 address (This can be loopback or interface depending on the design),  Protocol extensions have been made on BGP when IPv6 routes are advertised, BGP would construct a IPv4 mapped IPv6 address. Example lets say the PNH is 172.1.3.1 for VPN-v4 route. For VPNv6 route, the PNH would appear as ::ffff:172.1.3.1 i.e. `::ffff:<IPv4 route>`.
 
 Once the PNH is present, one needs to resolve the route, else it would show up as a hidden route. In order for routes to resolve, for IPv4 VPN routes, the resolution happens through inet.3 table. If there is a route existing for the PNH in inet.3 table, BGP would resolve it. 
