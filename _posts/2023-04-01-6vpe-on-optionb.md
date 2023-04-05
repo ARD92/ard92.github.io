@@ -364,3 +364,48 @@ ff02::2/128        *[INET6/0] 19:04:37
                        MultiRec
 ```
 
+### Ping E2E
+
+```
+root@vmx1# run ping 2001::4 source 2001::1 routing-instance CUST-V4
+PING6(56=40+8+8 bytes) 2001::1 --> 2001::4
+16 bytes from 2001::4, icmp_seq=0 hlim=62 time=38.339 ms
+16 bytes from 2001::4, icmp_seq=1 hlim=62 time=3.090 ms
+16 bytes from 2001::4, icmp_seq=2 hlim=62 time=2.812 ms
+16 bytes from 2001::4, icmp_seq=3 hlim=62 time=3.138 ms
+```
+
+### Flow captures on vSRX performing 6vPE
+```
+root@vsrx# run show security flow session
+Session ID: 59858, Policy name: self-traffic-policy/1, State: Stand-alone, Timeout: 1796, Valid
+  In: 172.1.3.2/50050 --> 172.1.3.1/179;tcp, Conn Tag: 0x0, If: .local..0, Pkts: 5879, Bytes: 361993,
+  Out: 172.1.3.1/179 --> 172.1.3.2/50050;tcp, Conn Tag: 0x0, If: ge-0/0/0.0, Pkts: 5878, Bytes: 362215,
+
+Session ID: 60262, Policy name: default-policy-logical-system-00/2, State: Stand-alone, Timeout: 2, Valid
+  In: 2001::1/32208 --> 2001::4/7;icmp6, Conn Tag: 0x0, If: ge-0/0/0.0, Pkts: 1, Bytes: 56,
+  Out: 2001::4/7 --> 2001::1/32208;icmp6, Conn Tag: 0x0, If: .local..135, Pkts: 1, Bytes: 56,
+
+Session ID: 60264, Policy name: default-policy-logical-system-00/2, State: Stand-alone, Timeout: 2, Valid
+  In: 2001::1/32208 --> 2001::4/8;icmp6, Conn Tag: 0x0, If: ge-0/0/0.0, Pkts: 1, Bytes: 56,
+  Out: 2001::4/8 --> 2001::1/32208;icmp6, Conn Tag: 0x0, If: .local..135, Pkts: 1, Bytes: 56,
+
+Session ID: 60266, Policy name: default-policy-logical-system-00/2, State: Stand-alone, Timeout: 4, Valid
+  In: 2001::1/32208 --> 2001::4/9;icmp6, Conn Tag: 0x0, If: ge-0/0/0.0, Pkts: 1, Bytes: 56,
+  Out: 2001::4/9 --> 2001::1/32208;icmp6, Conn Tag: 0x0, If: .local..135, Pkts: 1, Bytes: 56,
+Total sessions: 4
+```
+
+### Dataplane captures 
+
+### Segment vmx1_vmx2
+
+```
+17:04:54.742062 02:aa:01:10:01:00 > 02:aa:01:10:02:00, ethertype MPLS unicast (0x8847), length 74: MPLS (label 299968, exp 0, [S], ttl 64) 2001::1 > 2001::4: ICMP6, echo request, seq 67, length 16
+17:04:54.744228 02:aa:01:10:02:00 > 02:aa:01:10:01:00, ethertype MPLS unicast (0x8847), length 74: MPLS (label 17, exp 0, [S], ttl 62) 2001::4 > 2001::1: ICMP6, echo reply, seq 67, length 16
+```
+
+## Configuration of all devices 
+
+you can build this topology using [topology-builder](https://github.com/ARD92/vm-topology-builder/tree/main/topologies/6vpe/)
+The configuration for this can be found [here](https://github.com/ARD92/vm-topology-builder/tree/main/topologies/6vpe/configs)

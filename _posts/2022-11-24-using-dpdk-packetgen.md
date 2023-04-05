@@ -226,3 +226,24 @@ cat /sys/devices/system/cpu/cpu3/topology/thread_siblings_list
 3,35
 ```
 Here cpu 2 has sibling thread 34 and cpu3 has sibling thread 35. 
+
+### STTY 
+Once we run pktgen it might overwrite the screen. use `stty sane` to fix that
+
+### Pktgen usage
+
+### using it with Junos
+
+When you want to pass traffic to vNFs such as vMX, vSRX. Make sure the mac address of the interfaces match with the destination mac on the .pkt file 
+
+For example here the dmac address belongs to interface ge-0/0/0 of vMX 
+
+#### Find mac address
+```
+show interfaces ge-0/0/0 extensive | match Curr
+```
+
+#### .pkt file
+```
+```
+
