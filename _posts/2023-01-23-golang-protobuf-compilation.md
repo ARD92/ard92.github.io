@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Compiling proto files in golang  
-tags: linux
+tags: linux golang
 ---
 
 Follow the below steps in order to compile proto files in golang. 
