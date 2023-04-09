@@ -318,3 +318,7 @@ Cisco NetFlow/IPFIX
             Data Link Frame Section: 02aa01100100b644665e337c080045000049000000000011a4a00a0101020a01010103e8…
                 String_len_short: 87
 ```
+
+## Inline monitoring decoder
+you can find an inline-monitoring decoder [here](https://github.com/ARD92/imon-decoder) to decode flows which are encapsulated within GTP headers.
+
