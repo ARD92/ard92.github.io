@@ -404,6 +404,32 @@ Total sessions: 4
 17:04:54.742062 02:aa:01:10:01:00 > 02:aa:01:10:02:00, ethertype MPLS unicast (0x8847), length 74: MPLS (label 299968, exp 0, [S], ttl 64) 2001::1 > 2001::4: ICMP6, echo request, seq 67, length 16
 17:04:54.744228 02:aa:01:10:02:00 > 02:aa:01:10:01:00, ethertype MPLS unicast (0x8847), length 74: MPLS (label 17, exp 0, [S], ttl 62) 2001::4 > 2001::1: ICMP6, echo reply, seq 67, length 16
 ```
+## Verification of mpls flow mode on vSRX
+```
+root@vsrx# run show security flow status
+  Flow forwarding mode:
+    Inet forwarding mode: flow based
+    Inet6 forwarding mode: flow based
+    MPLS forwarding mode: flow based
+    ISO forwarding mode: drop
+    Tap mode: disabled (default)
+    Enhanced services mode: Disabled
+  Flow trace status
+    Flow tracing status: off
+  Flow session distribution
+    Distribution mode: Hash-based
+    GTP-U distribution: Disabled
+    SCTP distribution: Enabled
+  Flow ipsec performance acceleration: off
+  Flow gre performance acceleration: off
+  Flow packet ordering
+    Ordering mode: Hardware
+  Flow power mode: Enabled
+  Flow power mode IPsec: Enabled
+  Flow power mode IPsec QAT: Disabled
+  Fat core group status: off
+  Flow inline fpga crypto: Disabled
+```
 
 ## Configuration of all devices 
 
