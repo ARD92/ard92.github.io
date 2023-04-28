@@ -189,3 +189,28 @@ unpacking docker.io/library/crpd:23.1R1.8 (sha256:bb82530036904d12f19bc2036a3734
 root@jcnr2:~# crictl images | grep crpd
 docker.io/library/crpd                    23.1R1.8            a1748707249d3       507MB
 ```
+
+## Pods not scheduled 
+This could be because the node may not be tainted. Modify them accordingly to allow pod scheduling since this should be an all in one cluster. The master node itself will run pods.
+```
+kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+```
+
+## Master node labeling
+```
+kubectl label node ubuntu node-role.kubernetes.io/master=
+``` 
+
+## Make file issues when compiling
+Error when compiling in ubuntu using Make
+
+```
+strip jcnr
+make: strip: Command not found
+make: *** [Makefile:38: docker-images] Error 127
+```
+
+To fix this we need to install below along with installing `make`
+```
+apt install binutils
+```
