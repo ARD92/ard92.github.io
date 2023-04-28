@@ -112,11 +112,80 @@ worker1    NotReady   <none>          22h     v1.25.4
 worker2    NotReady   <none>          6m18s   v1.25.4
 ```
 
-##
+## Starting cluster
 ```
 To start using your cluster, you need to run the following as a regular user:
 
   mkdir -p $HOME/.kube
   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+## Error while dialing dial unix /var/run/dockershim.sock
+when a k8s cluster is brought up there are situations where you might have seen the error "Error while dialing dial unix /var/run/dockershim.sock". This would be seen in below 
+```
+root@jcnr2:~# crictl ps
+WARN[0000] runtime connect using default endpoints: [unix:///var/run/dockershim.sock unix:///run/containerd/containerd.sock unix:///run/crio/crio.sock unix:///var/run/cri-dockerd.sock]. As the default settings are now deprecated, you should set the endpoint instead.
+WARN[0000] image connect using default endpoints: [unix:///var/run/dockershim.sock unix:///run/containerd/containerd.sock unix:///run/crio/crio.sock unix:///var/run/cri-dockerd.sock]. As the default settings are now deprecated, you should set the endpoint instead.
+E0428 19:02:30.325516   24230 remote_runtime.go:390] "ListContainers with filter from runtime service failed" err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial unix /var/run/dockershim.sock: connect: no such file or directory\"" filter="&ContainerFilter{Id:,State:&ContainerStateValue{State:CONT
+```
+
+To solve, the below, we need to ensure below is added to file `/etc/crictl.yaml`
+
+```
+root@vm:~# more /etc/crictl.yaml
+runtime-endpoint: unix:///run/containerd/containerd.sock
+image-endpoint: unix:///run/containerd/containerd.sock
+```
+### Restart service 
+```
+sudo systemctl restart containerd
+```
+
+### Verify
+```
+root@jcnr2:~# crictl ps
+CONTAINER           IMAGE               CREATED             STATE               NAME                ATTEMPT             POD ID              POD
+```
+
+## kubelet failing 
+```
+root@vm:~# service kubelet status
+● kubelet.service - kubelet: The Kubernetes Node Agent
+     Loaded: loaded (/lib/systemd/system/kubelet.service; enabled; vendor preset:>
+    Drop-In: /etc/systemd/system/kubelet.service.d
+             └─10-kubeadm.conf
+     Active: activating (auto-restart) (Result: exit-code) since Fri 2023-04-28 1>
+       Docs: https://kubernetes.io/docs/home/
+    Process: 25125 ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_C>
+   Main PID: 25125 (code=exited, status=1/FAILURE)
+```
+
+Notice that kubelet is not runing and hence kubeadm init fails . In order to fix sometimes, we might have 
+
+```
+sudo kubeadm reset
+sudo kubeadm init phase certs all
+sudo kubeadm init phase kubeconfig all
+sudo kubeadm init phase control-plane all --pod-network-cidr 10.244.0.0/16
+sudo sed -i 's/initialDelaySeconds: [0-9][0-9]/initialDelaySeconds: 240/g' /etc/kubernetes/manifests/kube-apiserver.yaml
+sudo sed -i 's/failureThreshold: [0-9]/failureThreshold: 18/g'             /etc/kubernetes/manifests/kube-apiserver.yaml
+sudo sed -i 's/timeoutSeconds: [0-9][0-9]/timeoutSeconds: 20/g'            /etc/kubernetes/manifests/kube-apiserver.yaml
+sudo kubeadm init --v=1 --skip-phases=certs,kubeconfig,control-plane --ignore-preflight-errors=all --pod-network-cidr 10.244.0.0/16
+```
+## Load images in CRIO 
+
+images loaded should be in .tar format and hence the files are .tgz are used, we need to unzip them.
+
+```
+root@jcnr2:~# gunzip crpd.tgz
+
+root@jcnr2:~# ls -l crpd.tar
+-rw-r--r-- 1 root root 507279360 Apr 28 19:26 crpd.tar
+
+root@jcnr2:~# ctr -n=k8s.io image import crpd.tar
+unpacking docker.io/library/crpd:23.1R1.8 (sha256:bb82530036904d12f19bc2036a3734450712014780e3d27b8de841929a16fc97)...done
+
+root@jcnr2:~# crictl images | grep crpd
+docker.io/library/crpd                    23.1R1.8            a1748707249d3       507MB
 ```
