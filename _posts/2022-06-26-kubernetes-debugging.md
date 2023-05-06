@@ -3,6 +3,14 @@ layout: post
 title: kubernetes debugging
 tags: kubernetes
 ---
+## Table of contents 
+1. [Set alias for long commands](##Set alias for long commands)
+2. [Check which file is consuming the most space](##Check which file is consuming the most space)
+3. [Delete all Evicted pods](##Delete all Evicted pods)
+4. [Advertise out of a specific interface](##Advertise out of a specific interface)
+5. [Label a node](##Label a node)
+6. [Join a cluster](##Join a cluster)
+7. [Starting cluster](##Starting cluster)
 
 ## Set alias for long commands
 ```
@@ -213,4 +221,183 @@ make: *** [Makefile:38: docker-images] Error 127
 To fix this we need to install below along with installing `make`
 ```
 apt install binutils
+```
+
+## Connection refused when using kubectl commands
+we might see connection refused when running commands such as `kubectl get pods` 
+
+```
+[root@testvm user]# kubectl get pods -A
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
+```
+in such cases, there could be multiple reasons.
+
+### Verify kubectl config
+```
+[root@testvm user]# kubectl config view
+apiVersion: v1
+clusters: null
+contexts: null
+current-context: ""
+kind: Config
+preferences: {}
+users: null
+```
+
+This is incorrect and it needs to have values.
+
+### Verify if pods are running
+```
+[root@testvm03 test]# crictl ps
+CONTAINER           IMAGE                                                              CREATED             STATE               NAME                      ATTEMPT             POD ID              POD
+a421932c4e18f       28d55f91d3d8f7f6bd66168eed2cfd72b448be5e7807055c05a77499ce5c0674   3 minutes ago       Running             kube-proxy                0                   5503fb3113a7a       kube-proxy-2xz8r
+d43febcc6a688       3ea2571fcc83d8e2cb02bff3da18165a38799e59c78cbe845cd807631f0c5cc3   4 minutes ago       Running             kube-controller-manager   0                   1c7c2ed2f969b       kube-controller-manager-testvm.ocpvm2.net
+578e38437b299       165df46c1bb9b79c9b441ac039ac408ed6788164404dad56f966c810dc61f05a   4 minutes ago       Running             kube-scheduler            1                   a705545a02333       kube-scheduler-testvm.ocpvm2.net
+e50fdc53512fc       dc245db8c2faecaeac427ebcdf308ebe2c60e40728bf4f45f33d857ef3179969   4 minutes ago       Running             kube-apiserver            1                   18e27e12fa20e       kube-apiserver-testvm.ocpvm2.net
+4d1213b151d2e       4694d02f8e611efdffe9fb83a86d9d2969ef57b4b56622388eca6627287d6fd6   4 minutes ago       Running             etcd                      1                   065ab508a642c       etcd-testvm.ocpvm2.net
+```
+
+This shows that context is the issue and pods are running correctly. This could happen because of config file not placed correctly. 
+
+1. verify if config file is correct under `~/.kube/config` 
+2. if above has content and if you used `sudo` to bring up the cluster as a sudo user , verify if same is present under /root 
+3. if not, copy
+    ```
+    cp /home/test/.kube/ .
+    ```
+
+Validate the above using
+```
+[root@testvm03 test ~]# kubectl get pods -A
+NAMESPACE     NAME                                        READY   STATUS              RESTARTS   AGE
+kube-system   coredns-565d847f94-d6r69                    0/1     ContainerCreating   0          8m37s
+kube-system   coredns-565d847f94-sbmt8                    0/1     ContainerCreating   0          8m37s
+kube-system   etcd-testvm.ocpvm2.net                      1/1     Running             1          8m51s
+kube-system   kube-apiserver-testvm.ocpvm2.net            1/1     Running             1          8m53s
+kube-system   kube-controller-manager-testvm.ocpvm2.net   1/1     Running             0          8m51s
+kube-system   kube-proxy-2xz8r                            1/1     Running             0          8m37s
+kube-system   kube-scheduler-testvm.ocpvm2.net            1/1     Running             1          8m51s
+```
+
+## Multiple runtimes found 
+
+if you find below multiple run time error, edit the file
+
+```
+[user@testvm images]$ sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+Found multiple CRI endpoints on the host. Please define which one do you wish to use by setting the 'criSocket' field in the kubeadm configuration file: unix:///var/run/containerd/containerd.sock, unix:///var/run/crio/crio.sock
+To see the stack trace of this error execute with --v=5 or higher
+```
+
+This is because both crio and containerd socks are present and we would need to uninstall one of them. Alternatively, you point to exact runtime we would want to connect
+
+```
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --cri-socket /var/run/containerd/containerd.sock
+```
+The flag `--cri-socker` should also be passed for kubeadm resets as well if we have a cluster running on a different socket
+
+## Images not present in crictl even though loaded successfully 
+This is because of container run time not being recognized correctly. Ensure containerd is referenced everywhere correctly . Follow the below steps if you need to migrate from one container runtime to another (docker -> containerd or crio -> containerd).
+
+## Migrating to a different container run time 
+
+### drain the node
+```
+[user@testvm images]$ kubectl drain testvm.ocpvm2.net --ignore-daemonsets
+node/testvm.ocpvm2.net cordoned
+Warning: ignoring DaemonSet-managed Pods: kube-flannel/kube-flannel-ds-c5v45, kube-system/kube-multus-ds-tnjhl, kube-system/kube-proxy-2xz8r
+evicting pod kube-system/coredns-565d847f94-w7snq
+evicting pod kube-system/coredns-565d847f94-sbmt8
+pod/coredns-565d847f94-w7snq evicted
+pod/coredns-565d847f94-sbmt8 evicted
+node/testvm.ocpvm2.net drained
+```
+### Stop kubelet
+```
+[user@testvm images]$ systemctl stop kubelet
+```
+### Edit node file
+```
+[user@testvm images]$ sudo kubectl edit no testvm.ocpvm2.net
+node/testvm.ocpvm2.net edited
+```
+<< change value of kubeadm.alpha.kubernetes.io/cri-socket to unix:///run/containerd/containerd.sock >>
+save and close
+
+### Verify if node is using different run time
+```
+[user@testvm images]$ kubectl get nodes -o wide
+NAME                STATUS                     ROLES           AGE   VERSION   INTERNAL-IP    EXTERNAL-IP   OS-IMAGE                               KERNEL-VERSION                 CONTAINER-RUNTIME
+testvm.ocpvm2.net   Ready,SchedulingDisabled   control-plane   16h   v1.25.4   192.168.2.16   <none>        Red Hat Enterprise Linux 8.7 (Ootpa)   4.18.0-425.19.2.el8_7.x86_64   containerd://1.6.21
+
+[user@testvm ~]$ sudo kubectl get pods -A
+[sudo] password for user:
+NAMESPACE     NAME                                        READY   STATUS    RESTARTS   AGE
+kube-system   coredns-565d847f94-9wb5z                    0/1     Pending   0          6m37s
+kube-system   coredns-565d847f94-gmqkg                    0/1     Pending   0          6m37s
+kube-system   etcd-testvm.ocpvm2.net                      1/1     Running   8          6m50s
+kube-system   kube-apiserver-testvm.ocpvm2.net            1/1     Running   8          6m50s
+kube-system   kube-controller-manager-testvm.ocpvm2.net   1/1     Running   28         6m49s
+kube-system   kube-proxy-t66jp                            1/1     Running   0          6m37s
+kube-system   kube-scheduler-testvm.ocpvm2.net            1/1     Running   21         6m50s
+```
+
+## Kubernetes nodes not ready  ?
+when the nodes are not ready `kubectl describe node < name> ` gives an idea.
+
+Here , we notice that `InvalidDiskCapacity` 
+```
+Events:
+  Type     Reason                   Age                From             Message
+  ----     ------                   ----               ----             -------
+  Normal   Starting                 42m                kube-proxy
+  Normal   NodeHasSufficientMemory  42m (x4 over 42m)  kubelet          Node testvm.ocpvm2.net status is now: NodeHasSufficientMemory
+  Normal   NodeHasNoDiskPressure    42m (x4 over 42m)  kubelet          Node testvm.ocpvm2.net status is now: NodeHasNoDiskPressure
+  Normal   NodeHasSufficientPID     42m (x4 over 42m)  kubelet          Node testvm.ocpvm2.net status is now: NodeHasSufficientPID
+  Normal   Starting                 42m                kubelet          Starting kubelet.
+  Warning  InvalidDiskCapacity      42m                kubelet          invalid capacity 0 on image filesystem
+  Normal   NodeAllocatableEnforced  42m                kubelet          Updated Node Allocatable limit across pods
+  Normal   NodeHasSufficientMemory  42m                kubelet          Node testvm.ocpvm2.net status is now: NodeHasSufficientMemory
+  Normal   NodeHasNoDiskPressure    42m                kubelet          Node testvm.ocpvm2.net status is now: NodeHasNoDiskPressure
+  Normal   NodeHasSufficientPID     42m                kubelet          Node testvm.ocpvm2.net status is now: NodeHasSufficientPID
+```
+Look at space and ensure things are correct
+
+```
+df -h
+Filesystem      Size  Used Avail Use% Mounted on
+devtmpfs         58G     0   58G   0% /dev
+tmpfs            63G     0   63G   0% /dev/shm
+tmpfs            63G   92M   63G   1% /run
+tmpfs            63G     0   63G   0% /sys/fs/cgroup
+/dev/nvme0n1p5  625G   32G  594G   5% /
+/dev/nvme0n1p3  301G   12G  289G   4% /home
+/dev/nvme0n1p2 1014M  414M  601M  41% /boot
+/dev/nvme0n1p1  1.1G   10M  1.1G   1% /boot/efi
+tmpfs            13G  4.0K   13G   1% /run/user/1007
+```
+
+Looks like configuration of containerd is the problem . Re-generate and restart containerd
+```
+sudo containerd config default > config.toml
+sudo cp config.toml /etc/containerd/config.toml
+[user@testvm ~]$ systemctl restart containerd
+```
+
+### Validate
+```
+[user@testvm ~]$ sudo kubectl get nodes
+NAME                STATUS   ROLES                  AGE   VERSION
+testvm.ocpvm2.net   Ready    control-plane,master   50m   v1.25.4
+
+[user@testvm ~]$ sudo kubectl get pods -A
+NAMESPACE      NAME                                        READY   STATUS    RESTARTS   AGE
+kube-flannel   kube-flannel-ds-p2xrc                       1/1     Running   0          43m
+kube-system    coredns-565d847f94-9wb5z                    1/1     Running   0          50m
+kube-system    coredns-565d847f94-gmqkg                    1/1     Running   0          50m
+kube-system    etcd-testvm.ocpvm2.net                      1/1     Running   8          50m
+kube-system    kube-apiserver-testvm.ocpvm2.net            1/1     Running   8          50m
+kube-system    kube-controller-manager-testvm.ocpvm2.net   1/1     Running   28         50m
+kube-system    kube-proxy-t66jp                            1/1     Running   0          50m
+kube-system    kube-scheduler-testvm.ocpvm2.net            1/1     Running   21         50m
 ```
