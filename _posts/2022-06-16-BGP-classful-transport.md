@@ -83,14 +83,107 @@ protocols {
     }
 }
 ```
-## Verification
 
-### Enable BGP-CT
+### Configuration needed for BGP-Classful transport 
+1. enabling NLRI along with family labeled-unicast 
+2. auto-creation of transport classes upon receipt of a color community 
+3. Add an export policy to advertise routes with correct color community so BGP can carry it and on the receiving router, resolve it from correct Transport class
+
 ```
 set routing-options transport-class auto-create
+
+set protocols bgp group <GROUP_NAME> family inet labeled-unicast
+set protocols bgp group <GROUP_NAME> family inet transport
+```
+
+## Captures
+
+### Viewing transport classes
+```
+root@R4# run show routing transport-class all
+Transport Class: junos-tc-500  Configured name: TC-500
+  Color: 500, References: 2
+  Transport Endpoints: IPv4 1  IPv6 0
+  Mapping community: color:0:500
+  Route Target: transport-target:0:500
+  Routing instance: junos-rti-tc-500
+
+Transport Class: junos-tc-600  Configured name: TC-600
+  Color: 600, References: 1
+  Transport Endpoints: IPv4 0  IPv6 0
+  Mapping community: color:0:600
+  Route Target: transport-target:0:600
+  Routing instance: junos-rti-tc-600
+```
+
+### Viewing BGP routes 
+```
+root@R4# run show route table bgp.transport.3 extensive
+
+bgp.transport.3: 1 destinations, 1 routes (1 active, 0 holddown, 0 hidden)
+4.4.4.4:12:6.6.6.6/96 (1 entry, 1 announced)
+TSI:
+Page 0 idx 0, (group AS65402 type External) Type 1 val 0xa3ac7a8 (adv_entry)
+   Advertised metrics:
+     Flags: Nexthop Change
+     Nexthop: Self
+     MED: 1
+     AS path: [65401] I
+     Communities: transport-target:0:500
+     Label: 72
+    Advertise: 00000001
+Path 4.4.4.4:12:6.6.6.6
+Vector len 4.  Val: 0
+        *SPRING-TE Preference: 8
+                Next hop type: Indirect, Next hop index: 0
+                Address: 0x77bd5a0
+                Next-hop reference count: 4, key opaque handle: 0x0
+                Next hop type: Router, Next hop index: 0
+                Next hop: 172.16.30.2 via ge-0/0/1.0
+                Label operation: Push 60006
+                Label TTL action: prop-ttl
+                Load balance label: Label 60006: None;
+                Label element ptr: 0x7cca998
+                Label parent element ptr: 0x0
+                Label element references: 10
+                Label element child references: 6
+                Label element lsp id: 0
+                Session Id: 0
+                Next hop: 172.16.30.6 via ge-0/0/2.0, selected
+                Label operation: Push 60006
+Label TTL action: prop-ttl
+                Load balance label: Label 60006: None;
+                Label element ptr: 0x7cca998
+                Label parent element ptr: 0x0
+                Label element references: 10
+                Label element child references: 6
+                Label element lsp id: 0
+                Session Id: 0
+                Protocol next hop: 60006
+                Composite next hop: 0x6f620b0 - INH Session ID: 0
+                Indirect next hop: 0x711f6cc - INH Session ID: 0 Weight 0x1
+                State: <Secondary Active Int>
+                Local AS: 65401
+                Age: 1:17:06 	Metric: 1 	Metric2: 126
+                Validation State: unverified
+                Task: SPRING-TE
+                Announcement bits (1): 1-BGP_RT_Background
+                AS path: I
+                Communities: transport-target:0:500
+		SRTE Policy State:
+                   SR Preference/Override: 100/100
+                   Tunnel Source: Static configuration
+                Primary Routing Table: junos-rti-tc-500.inet.3
+                Thread: junos-main
 ```
 
 ## Validate
+Try this using cRPD or vMX. 
+
+- use [crpd-topology-builder](https://github.com/ARD92/crpd-topology-builder/tree/master/topologies/bgp-ct) for crpd setup
+- use [vm-topology-builder](https://github.com/ARD92/vm-topology-builder/tree/main/topologies/INTER-AS-BGP-CT) for vmx based setup 
+
+necessary configs are present in the same link.
 
 ## References 
 - [draft-classful-transport](https://www.ietf.org/archive/id/draft-kaliraj-idr-bgp-classful-transport-planes-17.txt)
