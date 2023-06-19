@@ -70,7 +70,7 @@ Action(s): accept,count
 ## Classful transport 
 Classful transport is a new way in Junos which can be used to signal intent. What I mean by that is, we can now signal color communities over BGP, RSVP, SR protocols . With this infrastructure we can also signal resolution RIBs. If we receive a route with a special community that is user defined , we can inform Junos to resolve that route from a particular routing table. you can read more on [classful-transport](https://ard92.github.io/2022/06/16/BGP-classful-transport.html). 
 
-## Redirect-to-IP in CT 
+## Configuring resolution schemes which flowspec can leverage
 ### Config
 ```
 routing-options {
