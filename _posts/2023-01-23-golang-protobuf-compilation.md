@@ -110,27 +110,35 @@ jnx/
 ## How about compiling proto files in python ? 
 
 ### upgrade pip if not already done 
+```
 python -m pip install --upgrade pip
+```
 
 ### setup a virtual env
+```
 python -m pip install virtualenv
+```
 
 ### create a virtual env 
+```
 python3 -m venv <path-to-venv>
-
-example: python3 -m venv jet 
+```
 
 ### activate the virtual env
+```
 source <path-to-venv>/bin/activate
-
-example: source jet/bin/activate
+```
 
 ### Upgrade pip and install grpc 
+```
 python -m pip install --upgrade pip
 python -m pip install grpcio
+```
 
 ### install grpcio-tools. This contains protoc which is necessary to compile the proto files
+```
 python -m pip install grpcio-tools
+```
 
 ### Compiling
 ```
