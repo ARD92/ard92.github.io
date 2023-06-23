@@ -78,5 +78,18 @@ Restart terminal
 ## Convert md -> pdf
 ```
 pandoc 2023-06-08-mapt.md -o output.pdf -V geometry:margin=1in
+```
+
+### Adding meta data to md file
+Have the below format for metadata
+
+```
+---
+layout: post
+title: MAP-T for IPv4-IPv6 translations
+tags: linux junos
+author:
+ - Aravind Prabhakar
+---
 ``` 
 
