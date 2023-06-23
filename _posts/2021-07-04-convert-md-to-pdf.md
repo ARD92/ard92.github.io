@@ -63,3 +63,20 @@ Options:
   --help                   Show this message and exit.
 ```
 
+## Using pandoc
+
+Pandoc is an alternative tool which can be used on macs. 
+
+## Install
+```
+brew install pandoc
+brew install basictex --cask
+brew cask install basictex
+```
+Restart terminal 
+
+## Convert md -> pdf
+```
+pandoc 2023-06-08-mapt.md -o output.pdf -V geometry:margin=1in
+``` 
+
