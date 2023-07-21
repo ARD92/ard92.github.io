@@ -11,6 +11,8 @@ tags: kubernetes
 5. [Label a node](##Label a node)
 6. [Join a cluster](##Join a cluster)
 7. [Starting cluster](##Starting cluster)
+8. [uninstall k8s](## clean uninstall k8s )
+9. [install k8s](##Installing)
 
 ## Set alias for long commands
 ```
@@ -400,4 +402,93 @@ kube-system    kube-apiserver-testvm.ocpvm2.net            1/1     Running   8  
 kube-system    kube-controller-manager-testvm.ocpvm2.net   1/1     Running   28         50m
 kube-system    kube-proxy-t66jp                            1/1     Running   0          50m
 kube-system    kube-scheduler-testvm.ocpvm2.net            1/1     Running   21         50m
+```
+## 8. Uninstall k8s cluster
+
+```
+kubeadm reset 
+/*On Debian base Operating systems you can use the following command.*/
+
+# on debian base 
+sudo apt-get purge kubeadm kubectl kubelet kubernetes-cni kube* 
+
+# on debian base
+sudo apt-get autoremove
+
+#on centos base
+sudo yum autoremove
+
+/For all/
+sudo rm -rf ~/.kube
+
+kubeadm reset -f
+rm -rf /etc/cni /etc/kubernetes /var/lib/dockershim /var/lib/etcd /var/lib/kubelet /var/run/kubernetes ~/.kube/*
+iptables -F && iptables -X
+iptables -t nat -F && iptables -t nat -X
+iptables -t raw -F && iptables -t raw -X
+iptables -t mangle -F && iptables -t mangle -X
+systemctl restart docker
+```
+
+## 9.  Installaing
+
+```
+sudo apt-get update
+sudo apt install apt-transport-https curl
+Install containerd (reference: https://docs.docker.com/engine/install/ubuntu/)
+
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install containerd.io
+Create containerd configuration
+
+sudo mkdir -p /etc/containerd
+sudo containerd config default | sudo tee /etc/containerd/config.toml
+Edit /etc/containerd/config.toml
+
+sudo nano /etc/containerd/config.toml set SystemdCgroup = true
+sudo systemctl restart containerd
+Install Kubernetes
+
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
+sudo apt-add-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"
+sudo apt install kubeadm kubelet kubectl kubernetes-cni
+Disable swap
+
+sudo swapoff -a
+Check and remove any swap entry if exists
+
+sudo nano /etc/fstab
+Avoid error "/proc/sys/net/bridge/bridge-nf-call-iptables does not exist" on kubeinit (reference https://github.com/kubernetes/kubeadm/issues/1062). This is not necessary if docker is also installed in step 6.
+
+sudo modprobe br_netfilter
+sudo nano /proc/sys/net/ipv4/ip_forward Edit entry in ip_forward file and change to 1. (Or use sysctl -w net.ipv4.ip_forward=1 - thanks to @dpjanes, see comments)
+kubeinit for use with Flannel
+
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+Copy to config as kubadm command says
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+Apply Flannel (reference https://github.com/flannel-io/flannel)
+
+kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/v0.20.2/Documentation/kube-flannel.yml
+All should be running now:
+
+kubectl get pods --all-namespaces
+
+NAMESPACE      NAME                                  READY   STATUS    RESTARTS   AGE
+kube-flannel   kube-flannel-ds-mcjmm                 1/1     Running   0          76s
+kube-system    coredns-787d4945fb-fb59g              1/1     Running   0          8m8s
+kube-system    coredns-787d4945fb-t25tj              1/1     Running   0          8m8s
+kube-system    etcd-kube-master                      1/1     Running   0          8m19s
+kube-system    kube-apiserver-kube-master            1/1     Running   0          8m19s
+kube-system    kube-controller-manager-kube-master   1/1     Running   0          8m19s
+kube-system    kube-proxy-2hz29                      1/1     Running   0          8m8s
+kube-system    kube-scheduler-kube-master            1/1     Running   0          8m19s
+Share
+Follow
 ```

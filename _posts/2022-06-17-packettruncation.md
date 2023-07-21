@@ -38,7 +38,7 @@ port-mirroring {
 
 Bind the PM instance to FPC 
 
-root@sims-vmx2# show chassis fpc 0
+root@vmx2# show chassis fpc 0
 pic 0 {
     tunnel-services {
         bandwidth 1g;
@@ -82,6 +82,70 @@ set interfaces ge-0/0/5 unit 60 vlan-id 60
 set interfaces ge-0/0/5 unit 60 family inet address 199.5.2.1/30
 set interfaces ge-0/0/5 unit 70 vlan-id 70
 set interfaces ge-0/0/5 unit 70 family inet address 199.5.3.1/30
+```
+
+## What if we want to mirror inclduing l2 header  
+When the destination is on local site, then the expectation is that collectors are the immediate next hop. i.e. they are directly connected. The same l2-mirror knob config you were using would work for this as well.
+
+### Configuration
+```
+==== config port mirror =====
+set forwarding-options port-mirroring instance TEST-L2-MIRROR input rate 1
+set forwarding-options port-mirroring instance TEST-L2-MIRROR family any output interface ge-0/0/1.1
+set chassis fpc 0 port-mirror-instance TEST-L2-MIRROR
+ 
+==== output interface config ======
+Note that I am leaving the interfaces untagged. So that I don’t modify the link. Native-vlan-id achieves this. If you don’t want multiple IFLs, then single unit 0 would work I believe.
+ 
+set bridge-domains PM-INTF domain-type bridge
+set bridge-domains PM-INTF vlan-id 1
+set bridge-domains PM-INTF interface ge-0/0/1.1
+ 
+set interfaces ge-0/0/1 flexible-vlan-tagging
+set interfaces ge-0/0/1 native-vlan-id 1
+set interfaces ge-0/0/1 encapsulation extended-vlan-bridge
+set interfaces ge-0/0/1 unit 1 vlan-id 1
+set interfaces ge-0/0/1 unit 1 family bridge
+ 
+============= firewall filter ==========
+set firewall family inet filter TEST-L2-MIRROR term 10 then count TEST-L2-MIRROR
+set firewall family inet filter TEST-L2-MIRROR term 10 then port-mirror-instance TEST-L2-MIRROR
+set firewall family inet filter TEST-L2-MIRROR term 10 then l2-mirror
+ 
+ 
+======== add filter to input interface =======
+set interfaces ge-0/0/0 passive-monitor-mode
+set interfaces ge-0/0/0 unit 0 family inet filter input TEST-L2-MIRROR
+set interfaces ge-0/0/0 unit 0 family inet address 10.1.1.1/30
+``` 
+ 
+ 
+### Captures 
+
+```
+=== start traffic with highlighted source/dest mac  ===
+/app # ./go-packet-gen -S 2.2.2.2 -D 3.3.3.3 -t udp -m B6:44:66:5E:33:7C -M 02:aa:01:10:01:00 -i pkt1 -n 10 -d 443 -s 10-100
+ 
+                      ____         ____            _        _      ____            __ _
+                     / ___| ___   |  _ \ __ _  ___| | _____| |_   / ___|_ __ __ _ / _| |_ ___ _ __
+                    | |  _ / _ \  | |_) / _ |/ __| |/ / _ \ __| | |   |  __/ _ | |_| __/ _ \  __|
+                    | |_| | (_) | |  __/ (_| | (__|   <  __/ |_  | |___| | | (_| |  _| ||  __/ |
+                     \____|\___/  |_|   \__,_|\___|_|\_\___|\__|  \____|_|  \__,_|_|  \__\___|_|
+ 
+--> IP packet with udp
+--> Sending packet..
+ 
+===== tcpdump on collector ====
+20:37:35.628091 b6:44:66:5e:33:7c > 02:aa:01:10:01:00, ethertype IPv4 (0x0800), length 51: 2.2.2.2.55 > 3.3.3.3.443: UDP, length 9
+20:37:35.841666 b6:44:66:5e:33:7c > 02:aa:01:10:01:00, ethertype IPv4 (0x0800), length 51: 2.2.2.2.56 > 3.3.3.3.443: UDP, length 9
+20:37:36.153754 b6:44:66:5e:33:7c > 02:aa:01:10:01:00, ethertype IPv4 (0x0800), length 51: 2.2.2.2.57 > 3.3.3.3.443: UDP, length 9
+20:37:36.402480 b6:44:66:5e:33:7c > 02:aa:01:10:01:00, ethertype IPv4 (0x0800), length 51: 2.2.2.2.58 > 3.3.3.3.443: UDP, length 9
+20:37:36.618045 b6:44:66:5e:33:7c > 02:aa:01:10:01:00, ethertype IPv4 (0x0800), length 51: 2.2.2.2.59 > 3.3.3.3.443: UDP, length 9
+20:37:36.836547 b6:44:66:5e:33:7c > 02:aa:01:10:01:00, ethertype IPv4 (0x0800), length 51: 2.2.2.2.60 > 3.3.3.3.443: UDP, length 9
+20:37:37.057531 b6:44:66:5e:33:7c > 02:aa:01:10:01:00, ethertype IPv4 (0x0800), length 51: 2.2.2.2.61 > 3.3.3.3.443: UDP, length 9
+20:37:37.277003 b6:44:66:5e:33:7c > 02:aa:01:10:01:00, ethertype IPv4 (0x0800), length 51: 2.2.2.2.62 > 3.3.3.3.443: UDP, length 9
+20:37:37.504175 b6:44:66:5e:33:7c > 02:aa:01:10:01:00, ethertype IPv4 (0x0800), length 51: 2.2.2.2.63 > 3.3.3.3.443: UDP, length 9
+ 
 ```
 
 ## Configuring Packet Truncation
@@ -160,6 +224,93 @@ tcpdump: verbose output suppressed, use -v[v]... for full protocol decode listen
 ```
 ![packettruncator](/images/packet_truncate_3.png)
 
+## What if you want to do L2 mirroring ? i.e. interfaces are L2 interfaces both mirroring ports and mirror to ports 
+
+```
+====== pm output interface ====
+root@map1# show interfaces ge-0/0/0 | display set
+set interfaces ge-0/0/0 flexible-vlan-tagging
+set interfaces ge-0/0/0 encapsulation flexible-ethernet-services
+set interfaces ge-0/0/0 unit 403 encapsulation vlan-bridge
+set interfaces ge-0/0/0 unit 403 vlan-id 403
+set interfaces ge-0/0/0 unit 403 family bridge filter output TEST-OUTPUT
+ 
+root@map1# show interfaces ge-0/0/0 | display set
+set interfaces ge-0/0/0 flexible-vlan-tagging
+set interfaces ge-0/0/0 encapsulation flexible-ethernet-services
+set interfaces ge-0/0/0 unit 403 encapsulation vlan-bridge
+set interfaces ge-0/0/0 unit 403 vlan-id 403
+set interfaces ge-0/0/0 unit 403 family bridge filter output TEST-OUTPUT
+ 
+ 
+====== input interface to mirror =====
+root@map1# show interfaces ge-0/0/1 | display set
+set interfaces ge-0/0/1 flexible-vlan-tagging
+set interfaces ge-0/0/1 native-vlan-id 503
+set interfaces ge-0/0/1 encapsulation flexible-ethernet-services
+set interfaces ge-0/0/1 unit 503 encapsulation vlan-bridge
+set interfaces ge-0/0/1 unit 503 vlan-id 503
+set interfaces ge-0/0/1 unit 503 family bridge filter input PM
+ 
+root@map1# show bridge-domains INPUT-PM | display set
+set bridge-domains INPUT-PM vlan-id 503
+set bridge-domains INPUT-PM interface ge-0/0/1.503
+ 
+======== mirror config =========
+ 
+root@map1# show forwarding-options | display set
+set forwarding-options port-mirroring instance PM1 input rate 1
+set forwarding-options port-mirroring instance PM1 family vpls output interface ge-0/0/0.403
+set forwarding-options port-mirroring instance PM1 family vpls output no-filter-check
+ 
+ 
+====== filter config ========
+root@map1# show firewall family bridge filter PM | display set
+set firewall family bridge filter PM term 10 then count count-pm-input
+set firewall family bridge filter PM term 10 then port-mirror-instance PM1
+set firewall family bridge filter PM term 10 then accept
+ 
+[edit]
+root@map1# show firewall family bridge filter TEST-OUTPUT | display set
+set firewall family bridge filter TEST-OUTPUT term 10 then count pm-count-out
+set firewall family bridge filter TEST-OUTPUT term 10 then accept
+set firewall family bridge filter TEST-OUTPUT term 10 then log 
+```
+
+### Verification
+
+Generate traffic
+``` 
+root@ubuntu:~/go-packet-crafter# ./go-packet-gen --smac 02:aa:01:40:01:00 --dmac 02:aa:01:10:02:01 -i eth1 -t udp -S 7.7.7.7 -D 18.18.18.18 -s 1023 -d 1088 -n 10
+ 
+ 
+--> IP packet with udp
+--> Sending packet..
+ 
+root@map1# run show firewall
+Filter: PM
+Counters:
+Name                                                                            Bytes              Packets
+count-pm-input                                                                   2100                   35
+ 
+Filter: TEST-OUTPUT
+Counters:
+Name                                                                            Bytes              Packets
+pm-count-out                                                                      660                   11
+ 
+tcpdump. On egress interface
+ 
+16:01:16.007717 02:aa:01:40:01:00 > 02:aa:01:10:02:01, ethertype IPv4 (0x0800), length 60: 7.7.7.7.1023 > 18.18.18.18.1088: UDP, length 9
+16:01:16.031690 02:aa:01:40:01:00 > 02:aa:01:10:02:01, ethertype IPv4 (0x0800), length 60: 7.7.7.7.1023 > 18.18.18.18.1088: UDP, length 9
+16:01:16.055691 02:aa:01:40:01:00 > 02:aa:01:10:02:01, ethertype IPv4 (0x0800), length 60: 7.7.7.7.1023 > 18.18.18.18.1088: UDP, length 9
+16:01:16.079606 02:aa:01:40:01:00 > 02:aa:01:10:02:01, ethertype IPv4 (0x0800), length 60: 7.7.7.7.1023 > 18.18.18.18.1088: UDP, length 9
+16:01:16.103647 02:aa:01:40:01:00 > 02:aa:01:10:02:01, ethertype IPv4 (0x0800), length 60: 7.7.7.7.1023 > 18.18.18.18.1088: UDP, length 9
+16:01:16.127704 02:aa:01:40:01:00 > 02:aa:01:10:02:01, ethertype IPv4 (0x0800), length 60: 7.7.7.7.1023 > 18.18.18.18.1088: UDP, length 9
+16:01:16.152077 02:aa:01:40:01:00 > 02:aa:01:10:02:01, ethertype IPv4 (0x0800), length 60: 7.7.7.7.1023 > 18.18.18.18.1088: UDP, length 9
+16:01:16.175748 02:aa:01:40:01:00 > 02:aa:01:10:02:01, ethertype IPv4 (0x0800), length 60: 7.7.7.7.1023 > 18.18.18.18.1088: UDP, length 9
+16:01:16.199735 02:aa:01:40:01:00 > 02:aa:01:10:02:01, ethertype IPv4 (0x0800), length 60: 7.7.7.7.1023 > 18.18.18.18.1088: UDP, length 9
+16:01:16.223768 02:aa:01:40:01:00 > 02:aa:01:10:02:01, ethertype IPv4 (0x0800), length 60: 7.7.7.7.1023 > 18.18.18.18.1088: UDP, length 9
+```
 ## Troubleshooting commands
 
 ```
@@ -214,3 +365,8 @@ Nexthop Statistics:
 Interface      NH ID Next Hop Addr    Output Pkts Pkt Rate    Output Bytes  Byte Rate   Protocol
 ------------ ------- --------------- ------------ -------- --------------- ---------- ---------- 
 ```
+
+## References 
+- [juniper-kb-article](https://supportportal.juniper.net/s/article/MX-Example-Configuring-port-mirroring-on-MX-devices?language=en_US)
+- [juniper-documentation](https://www.juniper.net/documentation/us/en/software/junos/network-mgmt/topics/topic-map/port-mirroring-instances.html)
+
