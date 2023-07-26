@@ -13,6 +13,7 @@ tags: kubernetes
 7. [Starting cluster](##Starting cluster)
 8. [uninstall k8s](## clean uninstall k8s )
 9. [install k8s](##Installing)
+10. [renew-certs](##Renew ceritifcates)
 
 ## Set alias for long commands
 ```
@@ -430,7 +431,7 @@ iptables -t mangle -F && iptables -t mangle -X
 systemctl restart docker
 ```
 
-## 9.  Installaing
+## 9.Installaing
 
 ```
 sudo apt-get update
@@ -492,3 +493,39 @@ kube-system    kube-scheduler-kube-master            1/1     Running   0        
 Share
 Follow
 ```
+
+## 10. Renew ceritificates 
+
+Sometimes certificates on cluster expires and it is painful to fix that with the different resources we find. 
+
+### First check if pods are running as expected 
+```
+kubectl get pods --insecure-skip-tls-verify=true
+```
+
+### Verify cert expirations 
+```
+kubeadm certs check-expiration
+```
+
+### Delete all existing certs 
+```
+rm /etc/kubernetes/pki/apiserver*
+rm /etc/kubernetes/pkt/front*
+```
+
+### Re-initialize and renew again to make sure process is clean without errors
+```
+kubeadm init phase certs all
+kubeadm certs renew all
+```
+
+### Restart kubelet and export again
+```
+service kubelet restart 
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+all commands should now work fine
