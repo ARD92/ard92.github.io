@@ -10,6 +10,12 @@ tags: kubernetes
 ![topology](/images/jcnr_csrx.png)
 
 ### Prerequisites 
+* Ensure vfio-pci drivers are installed and NICS can be bound to the vfio-pci drivers so that JCNR can leverage it 
+    This installs dpdk pktgen on the vm/bms which may not be needed
+    ```
+    git clone https://github.com/ARD92/dpdk_pktgen.git
+    ./install-dpdk-pktgen.sh 
+    ```
 * Install Kubernetes 
     ```
     git clone https://github.com/ARD92/kubevirt-manifests.git
