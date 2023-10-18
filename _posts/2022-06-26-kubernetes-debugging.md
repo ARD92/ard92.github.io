@@ -529,3 +529,23 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
 all commands should now work fine
+
+### Switching context on kubernetes/Openshift
+
+```
+[core@b4-96-91-d4-e2-c0 Juniper_Cloud_Native_Router_23.2]$ kubectl config get-contexts
+CURRENT   NAME                                           CLUSTER                    AUTHINFO                                NAMESPACE
+          admin                                          qctq05                     admin
+*         jcnr/api-qctq05-idev-net:6443/system:admin     api-qctq05-idev-net:6443   system:admin/api-qctq05-idev-net:6443   jcnr
+          pktgen/api-qctq05-idev-net:6443/system:admin   api-qctq05-idev-net:6443   system:admin/api-qctq05-idev-net:6443   pktgen
+
+[core@b4-96-91-d4-e2-c0 Juniper_Cloud_Native_Router_23.2]$ oc config use-context admin
+Switched to context "admin".
+[core@b4-96-91-d4-e2-c0 Juniper_Cloud_Native_Router_23.2]$ helm ls
+
+[core@b4-96-91-d4-e2-c0 Juniper_Cloud_Native_Router_23.2]$ kubectl config get-contexts
+CURRENT   NAME                                           CLUSTER                    AUTHINFO                                NAMESPACE
+*         admin                                          qctq05                     admin
+          jcnr/api-qctq05-idev-net:6443/system:admin     api-qctq05-idev-net:6443   system:admin/api-qctq05-idev-net:6443   jcnr
+          pktgen/api-qctq05-idev-net:6443/system:admin   api-qctq05-idev-net:6443   system:admin/api-qctq05-idev-net:6443   pktgen
+```
