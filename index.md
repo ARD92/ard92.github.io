@@ -7,6 +7,7 @@ Systems engineer who is passionate and enthusiastic about technology and solutio
 
 # ** CONTACT INFORMATION **
 Email: ard92sp@gmail.com
+Linkedin: [https://www.linkedin.com/in/aravind-prabhakar/](https://www.linkedin.com/in/aravind-prabhakar/)
 * * *
 
 # ** WHAT CAN YOU FIND HERE ? **
