@@ -63,4 +63,7 @@ if __name__ == "__main__":
  ```
 
 ##Example
-##python3 syslog-gen.py --address 10.143.64.140 --level CRITICAL --message "Event:PORT_DOWN, Interface:ge-0/0/0.0, Description: Port towards LA"
+
+```
+python3 syslog-gen.py --address 10.143.64.140 --level CRITICAL --message "Event:PORT_DOWN, Interface:ge-0/0/0.0, Description: Port towards LA"
+```
