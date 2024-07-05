@@ -2,7 +2,7 @@
 layout: post
 title: Topology builder for Juniper VNFs for fast functional testing  
 author: Aravind 
-tags: junos juniper kvm
+tags: junos juniper kvm golang
 ---
 Like many others, i too got bored of building topologies from scratch to do functional testing as and when any new feature releases on Junos. The process of editing multiple xml files to bring them on KVM and create bridges and use multiple VNFs was cumbersome. 
 This topology builder is aimed at helping build random topologies for rapid bring up and help ease up the process of testing any network or even prepare for JNCIE :) . It does not support SRIOV and relies on virtio interfaces and linux bridges to make connections between the VNFs. 
