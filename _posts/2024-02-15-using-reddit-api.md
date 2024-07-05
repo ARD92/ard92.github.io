@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  Using Reddit APIs 
-tags: python
+tags: python NLP
 ---
 
 I dont know about others, but I spend insane amount of time on reddit. While using the app is fun, there may be situations where we may want to use APIs to gather data. Multiple projects for educational/professional purposes can be done. This blog aims to demonstrate how to interact with reddit using the APIs 
