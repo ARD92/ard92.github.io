@@ -1,5 +1,5 @@
 ---
 layout: tagpage
-title: "Tag: ai-ml"
-tag: ai-ml
+title: "Tag: ai_ml"
+tag: ai_ml
 ---
